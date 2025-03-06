@@ -2,7 +2,7 @@
   "name": "csharp-mcpserver",
   "displayName": "C# MCP Server",
   "description": "An MCP server that exposes C# language features via Model Context Protocol",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "ConnorHallman",
   "icon": "icon.png",
   "repository": {

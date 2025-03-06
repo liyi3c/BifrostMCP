@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import fs from 'fs';
 import { RequestType } from 'vscode-jsonrpc';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
@@ -13,6 +14,7 @@ import { Request, Response } from 'express';
 import { CSharpExtensionExports } from './omnisharptypes';
 import { ReferencesAndPreview, ReferencesResponse, ReferenceParams } from './rosyln';
 import { Uri } from 'vscode';
+import { fstat } from 'fs';
 
 // Store MCP server globally
 let mcpServer: Server | undefined;
@@ -117,7 +119,7 @@ export async function activate(context: vscode.ExtensionContext) {
         console.error("Failed to start MCP server:", error);
     }
 
-    async function startMcpServer(port: number = 8003): Promise<{ mcpServer: Server, httpServer: HttpServer, port: number }> {
+    async function startMcpServer(port: number = 8008): Promise<{ mcpServer: Server, httpServer: HttpServer, port: number }> {
         // Create an MCP Server
         mcpServer = new Server(
             {
@@ -224,6 +226,12 @@ export async function activate(context: vscode.ExtensionContext) {
                         if (!parsedUri) {
                             return {
                                 content: [{ type: "text", text: "Invalid arguments: textDocument.uri is required." }],
+                                isError: true,
+                            };
+                        }
+                        if (!fs.existsSync(parsedUri)) {
+                            return {
+                                content: [{ type: "text", text: `Invalid arguments: file with uri "${parsedUri}" does not exist.` }],
                                 isError: true,
                             };
                         }
