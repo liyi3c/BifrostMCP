@@ -12,6 +12,7 @@ import type { Server as HttpServer } from 'http';
 import { Request, Response } from 'express';
 import { CSharpExtensionExports } from './omnisharptypes';
 import { ReferencesAndPreview, ReferencesResponse, ReferenceParams } from './rosyln';
+import { Uri } from 'vscode';
 
 // Store MCP server globally
 let mcpServer: Server | undefined;
@@ -20,7 +21,8 @@ let httpServer: HttpServer | undefined;
 
 async function getPreviewForReference(reference: ReferencesResponse): Promise<string> {
     try {
-        const document = await vscode.workspace.openTextDocument(reference.uri);
+        const uri = Uri.parse(decodeURIComponent(reference.uri));
+        const document = await vscode.workspace.openTextDocument(uri);
         const line = document.lineAt(reference.range.start.line);
         return line.text.trim();
     } catch (error) {
@@ -218,10 +220,17 @@ export async function activate(context: vscode.ExtensionContext) {
                             };
                         }
                         
-                        // Convert args to ReferenceParams
+                        const parsedUri = vscode.Uri.parse((args as any).textDocument?.uri).fsPath;
+                        if (!parsedUri) {
+                            return {
+                                content: [{ type: "text", text: "Invalid arguments: textDocument.uri is required." }],
+                                isError: true,
+                            };
+                        }
+
                         const referencesArgs: ReferenceParams = {
                             textDocument: { 
-                                uri: (args as any).textDocument?.uri 
+                                uri: parsedUri // Normalize to Windows path
                             },
                             position: { 
                                 line: (args as any).position?.line, 
@@ -231,6 +240,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 includeDeclaration: (args as any).context?.includeDeclaration ?? true 
                             }
                         };
+                        
                         
                         // Validate required properties
                         if (!referencesArgs.textDocument?.uri || 
@@ -244,21 +254,66 @@ export async function activate(context: vscode.ExtensionContext) {
                                 isError: true,
                             };
                         }
-                        
-                        // Call Roslyn server
-                        const roslynResult = await serverRequest<ReferenceParams, ReferencesResponse[], Error>(
-                            referencesRequest, 
-                            referencesArgs, 
-                            cancellationTokenSource.token
-                        );
-                        
-                        // Generate previews for each reference
-                        const referencesAndPreviews: ReferencesAndPreview[] = [];
-                        for (const reference of roslynResult) {
-                            const preview = await getPreviewForReference(reference);
-                            referencesAndPreviews.push({...reference, preview});
+
+                        try {
+                            // Set a timeout for the request
+                            // const timeout = 10000; // 10 seconds
+                            // setTimeout(() => {
+                            //     cancellationTokenSource.cancel();
+                            // }, timeout);
+
+                            // Call Roslyn server
+                            const roslynResult = await serverRequest<ReferenceParams, ReferencesResponse[], Error>(
+                                referencesRequest, 
+                                referencesArgs, 
+                                cancellationTokenSource.token
+                            );
+
+                            // Validate and filter results
+                            if (!Array.isArray(roslynResult)) {
+                                throw new Error('Invalid response from Roslyn: expected array of references');
+                            }
+
+                            // Filter out invalid or duplicate references
+                            const uniqueRefs = new Map<string, ReferencesResponse>();
+                            for (const ref of roslynResult) {
+                                if (!ref.uri || !ref.range) continue;
+                                
+                                // Create a unique key for each reference
+                                const key = `${ref.uri}:${ref.range.start.line}:${ref.range.start.character}`;
+                                
+                                // Only keep the first occurrence
+                                if (!uniqueRefs.has(key)) {
+                                    uniqueRefs.set(key, ref);
+                                }
+                            }
+
+                            // Convert filtered references to array
+                            const filteredRefs = Array.from(uniqueRefs.values());
+                            
+                            // Generate previews for each reference
+                            const referencesAndPreviews: ReferencesAndPreview[] = [];
+                            for (const reference of filteredRefs) {
+                                try {
+                                    const preview = await getPreviewForReference(reference);
+                                    referencesAndPreviews.push({...reference, preview});
+                                } catch (error) {
+                                    console.warn(`Failed to get preview for reference: ${error}`);
+                                    // Continue with other references even if one preview fails
+                                }
+                            }
+
+                            console.log(`Found ${referencesAndPreviews.length} unique references after filtering`);
+                            result = referencesAndPreviews;
+
+                        } catch (error) {
+                            if (error instanceof Error && error.message.includes('Operation cancelled')) {
+                                throw new Error('Reference search timed out after 10 seconds');
+                            }
+                            throw error;
+                        } finally {
+                            cancellationTokenSource.dispose();
                         }
-                        result = referencesAndPreviews;
                         break;
                         
                     default:
