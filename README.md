@@ -23,10 +23,10 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 The extension will automatically start an MCP server when activated. To configure an AI assistant to use this server:
 
-1. The server runs on port 8003 by default
+1. The server runs on port 8008 by default
 2. Configure your MCP-compatible AI assistant to connect to:
-   - SSE endpoint: `http://localhost:8003/sse`
-   - Message endpoint: `http://localhost:8003/message`
+   - SSE endpoint: `http://localhost:8008/sse`
+   - Message endpoint: `http://localhost:8008/message`
 
 ### Available Commands
 
