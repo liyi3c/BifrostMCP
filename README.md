@@ -1,71 +1,79 @@
-# dotnetlanguagemcpserver README
+# C# MCP Server Extension
 
-This is the README for your extension "dotnetlanguagemcpserver". After writing up a brief description, we recommend including the following sections.
+This VS Code extension provides a Model Context Protocol (MCP) server that exposes C# language features to AI tools. It enables advanced code navigation and analysis capabilities for C# code when using AI coding assistants that support the MCP protocol.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **Find Usages**: Locate all references to a symbol in your C# codebase with detailed context
+- **HTTP/SSE Server**: Exposes language features over an MCP-compatible HTTP server
+- **AI Assistant Integration**: Ready to work with AI assistants that support the MCP protocol
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- [C# for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) extension must be installed
+- .NET SDK (compatible with the C# extension)
 
-## Extension Settings
+## Installation
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+1. Install the [C# for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) extension
+2. Install this extension
+3. Open a C# project in VS Code
 
-For example:
+## Usage
 
-This extension contributes the following settings:
+The extension will automatically start an MCP server when activated. To configure an AI assistant to use this server:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+1. The server runs on port 8003 by default
+2. Configure your MCP-compatible AI assistant to connect to:
+   - SSE endpoint: `http://localhost:8003/sse`
+   - Message endpoint: `http://localhost:8003/message`
 
-## Known Issues
+### Available Commands
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- `C# MCP: Start Server` - Manually start the MCP server
+- `C# MCP: Stop Server` - Stop the running MCP server
 
-## Release Notes
+## Tools
 
-Users appreciate release notes as you update your extension.
+### Find Usages
 
-### 1.0.0
+Find all references to a C# symbol in your codebase:
 
-Initial release of ...
+```json
+{
+  "name": "find_usages",
+  "arguments": {
+    "textDocument": {
+      "uri": "file:///path/to/your/file.cs"
+    },
+    "position": {
+      "line": 10,
+      "character": 15
+    },
+    "context": {
+      "includeDeclaration": true
+    }
+  }
+}
+```
 
-### 1.0.1
+The tool returns:
+- File paths for each reference
+- Line and character positions
+- Code preview for each reference
 
-Fixed issue #.
+## Troubleshooting
 
-### 1.1.0
+If you encounter issues:
 
-Added features X, Y, and Z.
+1. Ensure the C# extension is properly installed and activated
+2. Check that the C# project has loaded correctly
+3. Verify that port 8003 is available on your system
 
----
+## Contributing
 
-## Following extension guidelines
+Please feel free to submit issues or pull requests to the [GitHub repository](https://github.com/YourUsername/dotnetlanguagemcpserver).
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+## License
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+This extension is licensed under the MIT License.

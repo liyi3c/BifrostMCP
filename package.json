@@ -1,23 +1,45 @@
 {
-  "name": "dotnetlanguagemcpserver",
-  "displayName": "DotnetLanguageMCPServer",
-  "description": "An mcp server that exposes omnisharp functionality",
+  "name": "csharp-mcpserver",
+  "displayName": "C# MCP Server",
+  "description": "An MCP server that exposes C# language features via Model Context Protocol",
   "version": "0.0.1",
+  "publisher": "ConnorHallman",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/biegehydra/dotnetlanguagemcpserver"
+  },
   "engines": {
     "vscode": "^1.97.2"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Programming Languages",
+    "Language Packs"
+  ],
+  "keywords": [
+    "C#",
+    "MCP",
+    "dotnet",
+    "AI",
+    "find references"
   ],
   "activationEvents": [
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
+  "extensionDependencies": [
+    "ms-dotnettools.csharp"
+  ],
   "contributes": {
     "commands": [
       {
-        "command": "dotnetlanguagemcpserver.helloWorld",
-        "title": "Hello World"
+        "command": "dotnetlanguagemcpserver.startServer",
+        "title": "C# MCP: Start Server"
+      },
+      {
+        "command": "dotnetlanguagemcpserver.stopServer",
+        "title": "C# MCP: Stop Server"
       }
     ]
   },
@@ -35,7 +57,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.98.0",
+    "@types/vscode": "^1.97.2",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "@vscode/test-cli": "^0.0.10",
@@ -43,11 +65,16 @@
     "eslint": "^9.21.0",
     "ts-loader": "^9.5.2",
     "typescript": "^5.7.3",
+    "vscode-languageclient": "^9.0.1",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.0.1",
     "vscode-jsonrpc": "^8.2.1",
     "zod": "^3.24.2",
     "zod-to-json-schema": "^3.24.3"
