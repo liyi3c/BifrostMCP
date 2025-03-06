@@ -10,7 +10,7 @@
     "url": "https://github.com/biegehydra/dotnetlanguagemcpserver"
   },
   "engines": {
-    "vscode": "^1.97.2"
+    "vscode": "^1.96.0"
   },
   "categories": [
     "Other",
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.97.2",
+    "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "@vscode/test-cli": "^0.0.10",
