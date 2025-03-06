@@ -62,6 +62,27 @@ The tool returns:
 - Line and character positions
 - Code preview for each reference
 
+## TODO
+
+| **Endpoint** | **Purpose for MCP Server (LLM Assistant)** |
+|-------------|----------------------------------|
+| **`/codecheck`** | Runs full code diagnostics (errors, warnings, linting) and returns issues. LLM can use this to **detect and fix issues**. |
+| **`/codeformat`** | Formats code properly. Useful for **cleaning up LLM-generated code** before inserting it into the project. |
+| **`/completion`** | Provides **autocomplete suggestions**. The LLM can use this to **enhance its own completions** by comparing them with the language server’s. |
+| **`/completion/resolve`** | Further **resolves completion items**, adding details like signatures and documentation. |
+| **`/findsymbols`** | Finds **all declared symbols (functions, classes, variables)**, helping the LLM understand the codebase. |
+| **`/findusages`** | Finds **where a function, class, or variable is used**. Useful for **refactoring suggestions**. |
+| **`/gototypedefinition`** | Finds the **type definition of a symbol** (e.g., where a class is defined). Helps the LLM provide **type-aware completions**. |
+| **`/findimplementations`** | Retrieves **implementations of an interface or base class**. Helps the LLM when suggesting method overrides. |
+| **`/getcodeactions`** | Lists **available refactoring or quick fixes**. The LLM can suggest applying these fixes. |
+| **`/runcodeaction`** | Executes a **refactoring or quick fix**. If the LLM recommends a fix, it can **trigger this action automatically**. |
+| **`/rename`** | Renames a symbol across the project. If the LLM suggests a rename, it can apply this action. |
+| **`/typelookup`** | Retrieves **type information** for a symbol. Useful for an LLM to provide **type-aware autocompletions**. |
+| **`/metadata`** | Retrieves project **metadata** (e.g., dependencies, imports). Helps the LLM understand **frameworks and libraries in use**. |
+| **`/runfixall`** | Applies **all available quick fixes**. If the LLM detects multiple issues, it can run this to fix everything in one step. |
+| **`/quickinfo`** | Retrieves **hover info** (docs, type hints, signatures). Useful for explaining code in **chat-based LLM assistants**. |
+
+
 ## Troubleshooting
 
 If you encounter issues:
