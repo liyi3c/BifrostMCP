@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path';
+import { ReferenceContext } from 'vscode';
 
 export namespace Requests {
     export const AddToProject = '/addtoproject';
@@ -124,12 +125,6 @@ export interface ChangeBufferRequest {
 export type AddToProjectRequest = Request;
 
 export type RemoveFromProjectRequest = Request;
-
-export interface FindUsagesRequest extends Request {
-    //        MaxWidth: number; ?
-    OnlyThisFile: boolean;
-    ExcludeDefinition: boolean;
-}
 
 export interface FindSymbolsRequest extends Request {
     Filter: string;
