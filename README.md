@@ -64,6 +64,15 @@ The tool returns:
 
 ## TODO
 
+### Useful Links for contributors
+
+[Roslyns protocol](https://github.com/dotnet/roslyn/blob/main/src/LanguageServer/Protocol/Protocol/Navigation/ReferenceParams.cs): This is what I used for find usages type.
+
+[Omnisharp codebase](https://github.com/dotnet/vscode-csharp/blob/main/src/omnisharp/protocol.ts): DONT GET TRICKED BY REQUESTS THOUGH. For example, find usages calls textDocument/reference, not /findusages
+
+[Language Server Protcol LSP](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/): This is what omnisharp uses to communicate with roslyn. Thats where textDocument/reference comes from
+
+
 | **Endpoint** | **Purpose for MCP Server (LLM Assistant)** |
 |-------------|----------------------------------|
 | **`/codecheck`** | Runs full code diagnostics (errors, warnings, linting) and returns issues. LLM can use this to **detect and fix issues**. |
