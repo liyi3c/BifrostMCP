@@ -98,7 +98,7 @@ If you encounter issues:
 
 1. Ensure the C# extension is properly installed and activated
 2. Check that the C# project has loaded correctly
-3. Verify that port 8003 is available on your system
+3. Verify that port 8008 is available on your system
 
 ## Contributing
 
