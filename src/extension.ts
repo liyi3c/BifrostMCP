@@ -11,7 +11,6 @@ import express from 'express';
 import cors from 'cors';
 import type { Server as HttpServer } from 'http';
 import { Request, Response } from 'express';
-import { CSharpExtensionExports } from './omnisharptypes';
 import { ReferencesAndPreview, ReferencesResponse, ReferenceParams } from './rosyln';
 import { Uri } from 'vscode';
 import { fstat } from 'fs';
@@ -33,31 +32,6 @@ async function getPreviewForReference(reference: ReferencesResponse): Promise<st
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-    // Find C# extension
-    const csharpExtension = vscode.extensions.getExtension<CSharpExtensionExports>('ms-dotnettools.csharp');
-    if (!csharpExtension) {
-        vscode.window.showErrorMessage('C# extension is not installed or not activated.');
-        return;
-    }
-
-    // Activate C# extension if not already activated
-    try {
-        if (!csharpExtension.isActive) {
-            await csharpExtension.activate();
-        }
-
-        // Initialize C# extension
-        if (csharpExtension.exports && csharpExtension.exports.initializationFinished) {
-            await csharpExtension.exports.initializationFinished();
-        }
-    } catch (error) {
-        console.error("Failed to activate or initialize C# extension:", error);
-        return;
-    }
-
-    // Success! We can now use the C# extension.
-    console.log("C# Extension Activated and Initialized!");
-
     // Start the MCP server
     try {
         const serverInfo = await startMcpServer();
@@ -81,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Register commands
         context.subscriptions.push(
-            vscode.commands.registerCommand('csharplangmcpserver.startServer', async () => {
+            vscode.commands.registerCommand('langmcpserver.startServer', async () => {
                 try {
                     if (httpServer) {
                         vscode.window.showInformationMessage(`MCP server is already running on port ${(httpServer.address() as { port: number }).port}`);
@@ -94,7 +68,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
                 }
             }),
-            vscode.commands.registerCommand('csharplangmcpserver.stopServer', async () => {
+            vscode.commands.registerCommand('langmcpserver.stopServer', async () => {
                 if (!httpServer && !mcpServer) {
                     vscode.window.showInformationMessage('No MCP server is currently running');
                     return;
@@ -123,7 +97,7 @@ export async function activate(context: vscode.ExtensionContext) {
         // Create an MCP Server
         mcpServer = new Server(
             {
-                name: "dotnet-language-tools",
+                name: "language-tools",
                 version: "0.1.0",
             },
             {
@@ -140,7 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 {
                     name: "find_usages",
                     description: 
-                        "Finds all references to a symbol at a specified location in C# code. " +
+                        "Finds all references to a symbol at a specified location in code. " +
                         "This tool helps you identify where functions, variables, types, or other symbols are used throughout the codebase. " +
                         "It returns a list of all locations where the symbol is referenced, including: \n" +
                         "- File path of each reference\n" +
@@ -156,7 +130,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 properties: {
                                     uri: {
                                         type: "string",
-                                        description: "URI of the document (file:///path/to/file.cs format)"
+                                        description: "URI of the document (file:///path/to/file format)"
                                     }
                                 },
                                 required: ["uri"]
@@ -196,24 +170,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Add call tool handler
         mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
-            if (!csharpExtension || !csharpExtension.exports.experimental.sendServerRequest) {
-                return {
-                    content: [{ type: "text", text: "Roslyn server request interface not available." }],
-                    isError: true,
-                };
-            }
-            
-            const serverRequest = csharpExtension.exports.experimental.sendServerRequest;
-
             try {
                 const { name, arguments: args } = request.params;
-                const cancellationTokenSource = new vscode.CancellationTokenSource();
                 let result: any;
                 
                 switch (name) {
                     case "find_usages":
-                        const referencesRequest = new RequestType<ReferenceParams, ReferencesResponse[], Error>('textDocument/references');
-                        
                         // Validate and cast arguments
                         if (!args || typeof args !== 'object') {
                             return {
@@ -222,105 +184,68 @@ export async function activate(context: vscode.ExtensionContext) {
                             };
                         }
                         
-                        const parsedUri = vscode.Uri.parse((args as any).textDocument?.uri).fsPath;
-                        if (!parsedUri) {
+                        const uri = vscode.Uri.parse((args as any).textDocument?.uri);
+                        if (!uri) {
                             return {
                                 content: [{ type: "text", text: "Invalid arguments: textDocument.uri is required." }],
                                 isError: true,
                             };
                         }
-                        if (!fs.existsSync(parsedUri)) {
-                            return {
-                                content: [{ type: "text", text: `Invalid arguments: file with uri "${parsedUri}" does not exist.` }],
-                                isError: true,
-                            };
-                        }
 
-                        const referencesArgs: ReferenceParams = {
-                            textDocument: { 
-                                uri: parsedUri // Normalize to Windows path
-                            },
-                            position: { 
-                                line: (args as any).position?.line, 
-                                character: (args as any).position?.character 
-                            },
-                            context: { 
-                                includeDeclaration: (args as any).context?.includeDeclaration ?? true 
-                            }
-                        };
-                        
-                        
-                        // Validate required properties
-                        if (!referencesArgs.textDocument?.uri || 
-                            referencesArgs.position?.line === undefined || 
-                            referencesArgs.position?.character === undefined) {
-                            return {
-                                content: [{ 
-                                    type: "text", 
-                                    text: "Invalid arguments: textDocument.uri, position.line, and position.character are required."
-                                }],
-                                isError: true,
-                            };
-                        }
+                        const position = new vscode.Position(
+                            (args as any).position?.line,
+                            (args as any).position?.character
+                        );
 
                         try {
-                            // Set a timeout for the request
-                            // const timeout = 10000; // 10 seconds
-                            // setTimeout(() => {
-                            //     cancellationTokenSource.cancel();
-                            // }, timeout);
-
-                            // Call Roslyn server
-                            const roslynResult = await serverRequest<ReferenceParams, ReferencesResponse[], Error>(
-                                referencesRequest, 
-                                referencesArgs, 
-                                cancellationTokenSource.token
+                            // Get all references using VSCode's built-in functionality
+                            const locations = await vscode.commands.executeCommand<vscode.Location[]>(
+                                'vscode.executeReferenceProvider',
+                                uri,
+                                position
                             );
 
-                            // Validate and filter results
-                            if (!Array.isArray(roslynResult)) {
-                                throw new Error('Invalid response from Roslyn: expected array of references');
+                            if (!locations) {
+                                return {
+                                    content: [{ type: "text", text: "No references found" }],
+                                    isError: false
+                                };
                             }
 
-                            // Filter out invalid or duplicate references
-                            const uniqueRefs = new Map<string, ReferencesResponse>();
-                            for (const ref of roslynResult) {
-                                if (!ref.uri || !ref.range) continue;
-                                
-                                // Create a unique key for each reference
-                                const key = `${ref.uri}:${ref.range.start.line}:${ref.range.start.character}`;
-                                
-                                // Only keep the first occurrence
-                                if (!uniqueRefs.has(key)) {
-                                    uniqueRefs.set(key, ref);
-                                }
-                            }
-
-                            // Convert filtered references to array
-                            const filteredRefs = Array.from(uniqueRefs.values());
+                            // Convert VSCode locations to our response format
+                            const references: ReferencesAndPreview[] = [];
                             
-                            // Generate previews for each reference
-                            const referencesAndPreviews: ReferencesAndPreview[] = [];
-                            for (const reference of filteredRefs) {
+                            for (const location of locations) {
                                 try {
-                                    const preview = await getPreviewForReference(reference);
-                                    referencesAndPreviews.push({...reference, preview});
+                                    const document = await vscode.workspace.openTextDocument(location.uri);
+                                    const preview = document.lineAt(location.range.start.line).text.trim();
+                                    
+                                    references.push({
+                                        uri: location.uri.toString(),
+                                        range: {
+                                            start: {
+                                                line: location.range.start.line,
+                                                character: location.range.start.character
+                                            },
+                                            end: {
+                                                line: location.range.end.line,
+                                                character: location.range.end.character
+                                            }
+                                        },
+                                        preview
+                                    });
                                 } catch (error) {
                                     console.warn(`Failed to get preview for reference: ${error}`);
                                     // Continue with other references even if one preview fails
                                 }
                             }
 
-                            console.log(`Found ${referencesAndPreviews.length} unique references after filtering`);
-                            result = referencesAndPreviews;
+                            console.log(`Found ${references.length} references`);
+                            result = references;
 
                         } catch (error) {
-                            if (error instanceof Error && error.message.includes('Operation cancelled')) {
-                                throw new Error('Reference search timed out after 10 seconds');
-                            }
-                            throw error;
-                        } finally {
-                            cancellationTokenSource.dispose();
+                            console.error('Error finding references:', error);
+                            throw new Error('Failed to find references');
                         }
                         break;
                         
