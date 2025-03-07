@@ -2,12 +2,12 @@
   "name": "csharp-mcpserver",
   "displayName": "C# MCP Server",
   "description": "An MCP server that exposes C# language features via Model Context Protocol",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "ConnorHallman",
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/biegehydra/dotnetlanguagemcpserver"
+    "url": "https://github.com/biegehydra/csharplangmcpserver"
   },
   "engines": {
     "vscode": "^1.96.0"
@@ -34,11 +34,11 @@
   "contributes": {
     "commands": [
       {
-        "command": "dotnetlanguagemcpserver.startServer",
+        "command": "csharplangmcpserver.startServer",
         "title": "C# MCP: Start Server"
       },
       {
-        "command": "dotnetlanguagemcpserver.stopServer",
+        "command": "csharplangmcpserver.stopServer",
         "title": "C# MCP: Stop Server"
       }
     ]

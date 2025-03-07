@@ -102,7 +102,7 @@ If you encounter issues:
 
 ## Contributing
 
-Please feel free to submit issues or pull requests to the [GitHub repository](https://github.com/YourUsername/dotnetlanguagemcpserver).
+Please feel free to submit issues or pull requests to the [GitHub repository](https://github.com/biegehydra/csharplangmcpserver).
 
 ## License
 

@@ -81,7 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Register commands
         context.subscriptions.push(
-            vscode.commands.registerCommand('dotnetlanguagemcpserver.startServer', async () => {
+            vscode.commands.registerCommand('csharplangmcpserver.startServer', async () => {
                 try {
                     if (httpServer) {
                         vscode.window.showInformationMessage(`MCP server is already running on port ${(httpServer.address() as { port: number }).port}`);
@@ -94,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
                 }
             }),
-            vscode.commands.registerCommand('dotnetlanguagemcpserver.stopServer', async () => {
+            vscode.commands.registerCommand('csharplangmcpserver.stopServer', async () => {
                 if (!httpServer && !mcpServer) {
                     vscode.window.showInformationMessage('No MCP server is currently running');
                     return;
