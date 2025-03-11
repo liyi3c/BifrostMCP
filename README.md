@@ -2,6 +2,8 @@
 
 This VS Code extension provides a Model Context Protocol (MCP) server that exposes VSCode's powerful development tools and language features to AI tools. It enables advanced code navigation, analysis, and manipulation capabilities when using AI coding assistants that support the MCP protocol.
 
+[![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/cursor.png)
+
 ## Features
 
 - **Language Server Integration**: Access VSCode's language server capabilities for any supported language
@@ -17,24 +19,24 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 The extension provides access to many VSCode language features including:
 
-- Find References/Usages
-- Go to Definition
-- Find Implementations
-- Get Hover Information
-- Document Symbols
-- Code Completion
-- Signature Help
-- Rename Locations
-- Code Actions
-- Semantic Tokens
-- Call Hierarchy
-- Type Hierarchy
-- CodeLens
-- Selection Range
-- Type Definition
-- Declaration
-- Document Highlights
-- Workspace Symbol Search
+* **find\_usages**: Locate all symbol references.
+* **go\_to\_definition**: Jump to symbol definitions instantly.
+* **find\_implementations**: Discover implementations of interfaces/abstract methods.
+* **get\_hover\_info**: Get rich symbol docs on hover.
+* **get\_document\_symbols**: Outline all symbols in a file.
+* **get\_completions**: Context-aware auto-completions.
+* **get\_signature\_help**: Function parameter hints and overloads.
+* **get\_rename\_locations**: Safely rename symbols across the project.
+* **get\_code\_actions**: Quick fixes, refactors, and improvements.
+* **get\_semantic\_tokens**: Enhanced highlighting data.
+* **get\_call\_hierarchy**: See incoming/outgoing call relationships.
+* **get\_type\_hierarchy**: Visualize class and interface inheritance.
+* **get\_code\_lens**: Inline insights (references, tests, etc.).
+* **get\_selection\_range**: Smart selection expansion for code blocks.
+* **get\_type\_definition**: Jump to underlying type definitions.
+* **get\_declaration**: Navigate to symbol declarations.
+* **get\_document\_highlights**: Highlight all occurrences of a symbol.
+* **get\_workspace\_symbols**: Search symbols across your entire workspace.
 
 ## Requirements
 
@@ -61,6 +63,8 @@ The extension will automatically start an MCP server when activated. To configur
 - `MCP: Start Server` - Manually start the MCP server
 - `MCP: Stop Server` - Stop the running MCP server
 - `MCP: Open Debug Panel` - Open the debug panel to test available tools
+
+[![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/commands.png)
 
 ## Example Tool Usage
 
@@ -92,6 +96,10 @@ The extension will automatically start an MCP server when activated. To configur
   }
 }
 ```
+
+## Debugging
+Use the `MCP: Open Debug Panel` command
+[![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/debug_panel.png)
 
 ## Troubleshooting
 
