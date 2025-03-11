@@ -17,7 +17,7 @@ import { runTool } from './toolRunner';
 export async function activate(context: vscode.ExtensionContext) {
     // Register debug panel command
     context.subscriptions.push(
-        vscode.commands.registerCommand('langmcpserver.openDebugPanel', () => {
+        vscode.commands.registerCommand('bifrost-mcp.openDebugPanel', () => {
             createDebugPanel(context);
         })
     );
@@ -45,7 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Register commands
         context.subscriptions.push(
-            vscode.commands.registerCommand('langmcpserver.startServer', async () => {
+            vscode.commands.registerCommand('bifrost-mcp.startServer', async () => {
                 try {
                     if (httpServer) {
                         vscode.window.showInformationMessage(`MCP server is already running on port ${(httpServer.address() as { port: number }).port}`);
@@ -58,7 +58,39 @@ export async function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
                 }
             }),
-            vscode.commands.registerCommand('langmcpserver.stopServer', async () => {
+            vscode.commands.registerCommand('bifrost-mcp.startServerOnPort', async () => {
+                try {
+                    if (httpServer) {
+                        vscode.window.showInformationMessage(`MCP server is already running on port ${(httpServer.address() as { port: number }).port}`);
+                        return;
+                    }
+
+                    const portInput = await vscode.window.showInputBox({
+                        prompt: 'Enter the port number to start the MCP server on',
+                        placeHolder: '8008',
+                        validateInput: (value) => {
+                            const port = parseInt(value);
+                            if (isNaN(port) || port < 1 || port > 65535) {
+                                return 'Please enter a valid port number (1-65535)';
+                            }
+                            return null;
+                        }
+                    });
+
+                    if (portInput === undefined) {
+                        // User cancelled the input
+                        return;
+                    }
+
+                    const port = parseInt(portInput);
+                    const serverInfo = await startMcpServer(port);
+                    vscode.window.showInformationMessage(`MCP server started on port ${serverInfo.port}`);
+                } catch (error) {
+                    const errorMsg = error instanceof Error ? error.message : String(error);
+                    vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
+                }
+            }),
+            vscode.commands.registerCommand('bifrost-mcp.stopServer', async () => {
                 if (!httpServer && !mcpServer) {
                     vscode.window.showInformationMessage('No MCP server is currently running');
                     return;

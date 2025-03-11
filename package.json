@@ -2,7 +2,7 @@
   "name": "bifrost-mcp",
   "displayName": "Bifrost - VSCode Dev Tools MCP Server",
   "description": "An MCP server that exposes features of VSCode dev tools to the MCP clients",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "ConnorHallman",
   "icon": "icon.png",
   "repository": {
@@ -31,16 +31,20 @@
   "contributes": {
     "commands": [
       {
-        "command": "csharplangmcpserver.startServer",
-        "title": "C# MCP: Start Server"
+        "command": "bifrost-mcp.startServer",
+        "title": "Bifrost MCP: Start Server"
       },
       {
-        "command": "csharplangmcpserver.stopServer",
-        "title": "C# MCP: Stop Server"
+        "command": "bifrost-mcp.startServerOnPort",
+        "title": "Bifrost MCP: Start Server on Port"
       },
       {
-        "command": "langmcpserver.openDebugPanel",
-        "title": "MCP: Open Debug Panel"
+        "command": "bifrost-mcp.stopServer",
+        "title": "Bifrost MCP: Stop Server"
+      },
+      {
+        "command": "bifrost-mcp.openDebugPanel",
+        "title": "Bifrost MCP: Open Debug Panel"
       }
     ]
   },
