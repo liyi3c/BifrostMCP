@@ -1,8 +1,8 @@
 {
-  "name": "csharp-mcpserver",
-  "displayName": "C# MCP Server",
-  "description": "An MCP server that exposes C# language features via Model Context Protocol",
-  "version": "0.0.6",
+  "name": "vscode-mcpserver",
+  "displayName": "VSCode MCP Server",
+  "description": "An MCP server that exposes features of VSCode to the MCP clients",
+  "version": "0.0.7",
   "publisher": "ConnorHallman",
   "icon": "icon.png",
   "repository": {
@@ -40,6 +40,10 @@
       {
         "command": "csharplangmcpserver.stopServer",
         "title": "C# MCP: Stop Server"
+      },
+      {
+        "command": "langmcpserver.openDebugPanel",
+        "title": "MCP: Open Debug Panel"
       }
     ]
   },

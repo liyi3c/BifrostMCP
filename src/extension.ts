@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import fs from 'fs';
-import { RequestType } from 'vscode-jsonrpc';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { 
@@ -11,27 +9,19 @@ import express from 'express';
 import cors from 'cors';
 import type { Server as HttpServer } from 'http';
 import { Request, Response } from 'express';
-import { ReferencesAndPreview, ReferencesResponse, ReferenceParams } from './rosyln';
-import { Uri } from 'vscode';
-import { fstat } from 'fs';
-
-// Store MCP server globally
-let mcpServer: Server | undefined;
-// Store HTTP server globally
-let httpServer: HttpServer | undefined;
-
-async function getPreviewForReference(reference: ReferencesResponse): Promise<string> {
-    try {
-        const uri = Uri.parse(decodeURIComponent(reference.uri));
-        const document = await vscode.workspace.openTextDocument(uri);
-        const line = document.lineAt(reference.range.start.line);
-        return line.text.trim();
-    } catch (error) {
-        return "Preview unavailable";
-    }
-}
+import { mcpTools } from './tools';
+import { createDebugPanel } from './debugPanel';
+import { mcpServer, httpServer, setMcpServer, setHttpServer } from './globals';
+import { runTool } from './toolRunner';
 
 export async function activate(context: vscode.ExtensionContext) {
+    // Register debug panel command
+    context.subscriptions.push(
+        vscode.commands.registerCommand('langmcpserver.openDebugPanel', () => {
+            createDebugPanel(context);
+        })
+    );
+
     // Start the MCP server
     try {
         const serverInfo = await startMcpServer();
@@ -76,12 +66,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 
                 if (mcpServer) {
                     mcpServer.close();
-                    mcpServer = undefined;
+                    setMcpServer(undefined);
                 }
                 
                 if (httpServer) {
                     httpServer.close();
-                    httpServer = undefined;
+                    setHttpServer(undefined);
                 }
                 
                 vscode.window.showInformationMessage('MCP server stopped');
@@ -95,7 +85,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     async function startMcpServer(port: number = 8008): Promise<{ mcpServer: Server, httpServer: HttpServer, port: number }> {
         // Create an MCP Server
-        mcpServer = new Server(
+        setMcpServer(new Server(
             {
                 name: "language-tools",
                 version: "0.1.0",
@@ -106,152 +96,38 @@ export async function activate(context: vscode.ExtensionContext) {
                     resources: {},
                 }
             }
-        );
+        ));
 
         // Add tools handlers
-        mcpServer.setRequestHandler(ListToolsRequestSchema, async () => ({
-            tools: [
-                {
-                    name: "find_usages",
-                    description: 
-                        "Finds all references to a symbol at a specified location in code. " +
-                        "This tool helps you identify where functions, variables, types, or other symbols are used throughout the codebase. " +
-                        "It returns a list of all locations where the symbol is referenced, including: \n" +
-                        "- File path of each reference\n" +
-                        "- Line and character position\n" +
-                        "- A preview of the line containing the reference\n\n" +
-                        "This is useful for understanding code dependencies, planning refactoring, or tracing how a particular symbol is used.",
-                    inputSchema: {
-                        type: "object",
-                        properties: {
-                            textDocument: {
-                                type: "object",
-                                description: "The document containing the symbol",
-                                properties: {
-                                    uri: {
-                                        type: "string",
-                                        description: "URI of the document (file:///path/to/file format)"
-                                    }
-                                },
-                                required: ["uri"]
-                            },
-                            position: {
-                                type: "object",
-                                description: "The position of the symbol",
-                                properties: {
-                                    line: {
-                                        type: "number",
-                                        description: "Zero-based line number"
-                                    },
-                                    character: {
-                                        type: "number",
-                                        description: "Zero-based character position"
-                                    }
-                                },
-                                required: ["line", "character"]
-                            },
-                            context: {
-                                type: "object",
-                                description: "Additional context for the request",
-                                properties: {
-                                    includeDeclaration: {
-                                        type: "boolean",
-                                        description: "Whether to include the declaration of the symbol in the results",
-                                        default: true
-                                    }
-                                }
-                            }
-                        },
-                        required: ["textDocument", "position"]
-                    }
-                }
-            ]
+        mcpServer!.setRequestHandler(ListToolsRequestSchema, async () => ({
+            tools: mcpTools
         }));
 
         // Add call tool handler
-        mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
+        mcpServer!.setRequestHandler(CallToolRequestSchema, async (request) => {
             try {
                 const { name, arguments: args } = request.params;
                 let result: any;
                 
-                switch (name) {
-                    case "find_usages":
-                        // Validate and cast arguments
-                        if (!args || typeof args !== 'object') {
-                            return {
-                                content: [{ type: "text", text: "Invalid arguments: arguments must be an object." }],
-                                isError: true,
-                            };
-                        }
-                        
-                        const uri = vscode.Uri.parse((args as any).textDocument?.uri);
-                        if (!uri) {
-                            return {
-                                content: [{ type: "text", text: "Invalid arguments: textDocument.uri is required." }],
-                                isError: true,
-                            };
-                        }
-
-                        const position = new vscode.Position(
-                            (args as any).position?.line,
-                            (args as any).position?.character
-                        );
-
-                        try {
-                            // Get all references using VSCode's built-in functionality
-                            const locations = await vscode.commands.executeCommand<vscode.Location[]>(
-                                'vscode.executeReferenceProvider',
-                                uri,
-                                position
-                            );
-
-                            if (!locations) {
-                                return {
-                                    content: [{ type: "text", text: "No references found" }],
-                                    isError: false
-                                };
-                            }
-
-                            // Convert VSCode locations to our response format
-                            const references: ReferencesAndPreview[] = [];
-                            
-                            for (const location of locations) {
-                                try {
-                                    const document = await vscode.workspace.openTextDocument(location.uri);
-                                    const preview = document.lineAt(location.range.start.line).text.trim();
-                                    
-                                    references.push({
-                                        uri: location.uri.toString(),
-                                        range: {
-                                            start: {
-                                                line: location.range.start.line,
-                                                character: location.range.start.character
-                                            },
-                                            end: {
-                                                line: location.range.end.line,
-                                                character: location.range.end.character
-                                            }
-                                        },
-                                        preview
-                                    });
-                                } catch (error) {
-                                    console.warn(`Failed to get preview for reference: ${error}`);
-                                    // Continue with other references even if one preview fails
-                                }
-                            }
-
-                            console.log(`Found ${references.length} references`);
-                            result = references;
-
-                        } catch (error) {
-                            console.error('Error finding references:', error);
-                            throw new Error('Failed to find references');
-                        }
-                        break;
-                        
-                    default:
-                        throw new Error(`Unknown tool: ${name}`);
+                // Verify file exists for commands that require it
+                if (args && typeof args === 'object' && 'textDocument' in args && 
+                    args.textDocument && typeof args.textDocument === 'object' && 
+                    'uri' in args.textDocument && typeof args.textDocument.uri === 'string') {
+                    const uri = vscode.Uri.parse(args.textDocument.uri);
+                    try {
+                        await vscode.workspace.fs.stat(uri);
+                    } catch (error) {
+                        return {
+                            content: [{ 
+                                type: "text", 
+                                text: `Error: File not found - ${uri.fsPath}` 
+                            }],
+                            isError: true
+                        };
+                    }
                 }
+                
+                result = await runTool(name, args);
 
                 return { content: [{ type: "text", text: JSON.stringify(result) }] };
             } catch (error) {
@@ -349,15 +225,15 @@ export async function activate(context: vscode.ExtensionContext) {
         });
 
         // Start the server
-        httpServer = app.listen(port);
+        setHttpServer(app.listen(port));
         
         // Get the actual port (in case the specified port was busy)
-        const actualPort = (httpServer.address() as { port: number }).port;
+        const actualPort = (httpServer!.address() as { port: number }).port;
         console.log(`MCP Server listening on port ${actualPort}`);
 
         return {
-            mcpServer,
-            httpServer,
+            mcpServer: mcpServer!,
+            httpServer: httpServer!,
             port: actualPort
         };
     }
