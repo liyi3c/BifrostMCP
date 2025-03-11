@@ -28,9 +28,6 @@
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
-  "extensionDependencies": [
-    "ms-dotnettools.csharp"
-  ],
   "contributes": {
     "commands": [
       {
