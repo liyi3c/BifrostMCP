@@ -292,67 +292,182 @@ export const runTool = async (name: string, args: any) => {
                 };
             }
             break;
-        case "execute_code_lens":
-            const execUri = vscode.Uri.parse((args as any).textDocument?.uri);
-            const execPosition = createVscodePosition(
-                (args as any).position?.line,
-                (args as any).position?.character
+    
+        case "get_selection_range":
+            const selectionRanges = await vscode.commands.executeCommand<vscode.SelectionRange[]>(
+                'vscode.executeSelectionRangeProvider',
+                uri,
+                [position]
             );
-            const commandToExecute = (args as any).command;
+            result = selectionRanges?.map(range => ({
+                range: {
+                    start: {
+                        line: range.range.start.line,
+                        character: range.range.start.character
+                    },
+                    end: {
+                        line: range.range.end.line,
+                        character: range.range.end.character
+                    }
+                },
+                parent: range.parent ? {
+                    range: {
+                        start: {
+                            line: range.parent.range.start.line,
+                            character: range.parent.range.start.character
+                        },
+                        end: {
+                            line: range.parent.range.end.line,
+                            character: range.parent.range.end.character
+                        }
+                    }
+                } : undefined
+            }));
+            break;
 
-            try {
-                // First get the CodeLens at the specified position
-                const lenses = await vscode.commands.executeCommand<vscode.CodeLens[]>(
-                    'vscode.executeCodeLensProvider',
-                    execUri
-                );
-
-                if (!lenses || lenses.length === 0) {
+        case "get_type_definition":
+            const typeDefinitions = await vscode.commands.executeCommand<vscode.Location[] | vscode.LocationLink[]>(
+                'vscode.executeTypeDefinitionProvider',
+                uri,
+                position
+            );
+            result = typeDefinitions?.map(loc => {
+                if ('targetUri' in loc) {
                     return {
-                        content: [{ 
-                            type: "text", 
-                            text: "No CodeLens found at the specified position" 
-                        }],
-                        isError: true
+                        targetUri: loc.targetUri.toString(),
+                        targetRange: {
+                            start: {
+                                line: loc.targetRange.start.line,
+                                character: loc.targetRange.start.character
+                            },
+                            end: {
+                                line: loc.targetRange.end.line,
+                                character: loc.targetRange.end.character
+                            }
+                        },
+                        originSelectionRange: loc.originSelectionRange ? {
+                            start: {
+                                line: loc.originSelectionRange.start.line,
+                                character: loc.originSelectionRange.start.character
+                            },
+                            end: {
+                                line: loc.originSelectionRange.end.line,
+                                character: loc.originSelectionRange.end.character
+                            }
+                        } : undefined
+                    };
+                } else {
+                    return {
+                        uri: loc.uri.toString(),
+                        range: {
+                            start: {
+                                line: loc.range.start.line,
+                                character: loc.range.start.character
+                            },
+                            end: {
+                                line: loc.range.end.line,
+                                character: loc.range.end.character
+                            }
+                        }
                     };
                 }
+            });
+            break;
 
-                // Find the matching CodeLens
-                const targetLens = lenses.find(lens => 
-                    lens.range.start.line === execPosition?.line &&
-                    lens.range.start.character === execPosition?.character &&
-                    lens.command?.command === commandToExecute.command
-                );
-
-                if (!targetLens || !targetLens.command) {
+        case "get_declaration":
+            const declarations = await vscode.commands.executeCommand<vscode.Location[] | vscode.LocationLink[]>(
+                'vscode.executeDeclarationProvider',
+                uri,
+                position
+            );
+            result = declarations?.map(loc => {
+                if ('targetUri' in loc) {
                     return {
-                        content: [{ 
-                            type: "text", 
-                            text: "No matching CodeLens command found at the specified position" 
-                        }],
-                        isError: true
+                        targetUri: loc.targetUri.toString(),
+                        targetRange: {
+                            start: {
+                                line: loc.targetRange.start.line,
+                                character: loc.targetRange.start.character
+                            },
+                            end: {
+                                line: loc.targetRange.end.line,
+                                character: loc.targetRange.end.character
+                            }
+                        },
+                        originSelectionRange: loc.originSelectionRange ? {
+                            start: {
+                                line: loc.originSelectionRange.start.line,
+                                character: loc.originSelectionRange.start.character
+                            },
+                            end: {
+                                line: loc.originSelectionRange.end.line,
+                                character: loc.originSelectionRange.end.character
+                            }
+                        } : undefined
+                    };
+                } else {
+                    return {
+                        uri: loc.uri.toString(),
+                        range: {
+                            start: {
+                                line: loc.range.start.line,
+                                character: loc.range.start.character
+                            },
+                            end: {
+                                line: loc.range.end.line,
+                                character: loc.range.end.character
+                            }
+                        }
                     };
                 }
+            });
+            break;
 
-                // Execute the command
-                const commandResult = await vscode.commands.executeCommand(
-                    targetLens.command.command,
-                    ...(targetLens.command.arguments || [])
-                );
+        case "get_document_highlights":
+            const highlights = await vscode.commands.executeCommand<vscode.DocumentHighlight[]>(
+                'vscode.executeDocumentHighlights',
+                uri,
+                position
+            );
+            result = highlights?.map(highlight => ({
+                range: {
+                    start: {
+                        line: highlight.range.start.line,
+                        character: highlight.range.start.character
+                    },
+                    end: {
+                        line: highlight.range.end.line,
+                        character: highlight.range.end.character
+                    }
+                },
+                kind: highlight.kind
+            }));
+            break;
 
-                result = {
-                    command: targetLens.command,
-                    result: commandResult
-                };
-            } catch (error) {
-                return {
-                    content: [{ 
-                        type: "text", 
-                        text: `Error executing CodeLens command: ${error}` 
-                    }],
-                    isError: true
-                };
-            }
+        case "get_workspace_symbols":
+            const query = args.query || '';
+            const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
+                'vscode.executeWorkspaceSymbolProvider',
+                query
+            );
+            result = symbols?.map(symbol => ({
+                name: symbol.name,
+                kind: symbol.kind,
+                location: {
+                    uri: symbol.location.uri.toString(),
+                    range: {
+                        start: {
+                            line: symbol.location.range.start.line,
+                            character: symbol.location.range.start.character
+                        },
+                        end: {
+                            line: symbol.location.range.end.line,
+                            character: symbol.location.range.end.character
+                        }
+                    }
+                },
+                containerName: symbol.containerName
+            }));
             break;
 
         case "get_semantic_tokens":

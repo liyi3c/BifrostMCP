@@ -1,8 +1,8 @@
 {
-  "name": "vscode-mcpserver",
-  "displayName": "VSCode MCP Server",
-  "description": "An MCP server that exposes features of VSCode to the MCP clients",
-  "version": "0.0.7",
+  "name": "bifrost-mcp",
+  "displayName": "Bifrost - VSCode Dev Tools MCP Server",
+  "description": "An MCP server that exposes features of VSCode dev tools to the MCP clients",
+  "version": "0.0.8",
   "publisher": "ConnorHallman",
   "icon": "icon.png",
   "repository": {

@@ -585,14 +585,14 @@ export const mcpTools = [
         }
     },
     {
-        name: "execute_code_lens",
-        description: "Executes a CodeLens command at the specified location in code",
+        name: "get_selection_range",
+        description: "Gets selection ranges for a position in a document. This helps in smart selection expansion based on semantic document structure.",
         inputSchema: {
             type: "object",
             properties: {
                 textDocument: {
                     type: "object",
-                    description: "The document containing the CodeLens",
+                    description: "The document to analyze",
                     properties: {
                         uri: {
                             type: "string",
@@ -603,11 +603,11 @@ export const mcpTools = [
                 },
                 position: {
                     type: "object",
-                    description: "The position of the CodeLens",
+                    description: "The position to get selection ranges for",
                     properties: {
                         line: {
                             type: "number",
-                            description: "One-based line number"
+                            description: "Zero-based line number"
                         },
                         character: {
                             type: "number",
@@ -615,29 +615,131 @@ export const mcpTools = [
                         }
                     },
                     required: ["line", "character"]
-                },
-                command: {
-                    type: "object",
-                    description: "The command to execute",
-                    properties: {
-                        command: {
-                            type: "string",
-                            description: "Command identifier"
-                        },
-                        title: {
-                            type: "string",
-                            description: "Command title"
-                        },
-                        arguments: {
-                            type: "array",
-                            description: "Command arguments",
-                            items: {}
-                        }
-                    },
-                    required: ["command"]
                 }
             },
-            required: ["textDocument", "position", "command"]
+            required: ["textDocument", "position"]
+        }
+    },
+    {
+        name: "get_type_definition",
+        description: "Finds type definitions of a symbol at a specified location. This is particularly useful for finding the underlying type definitions of variables, interfaces, and classes.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                textDocument: {
+                    type: "object",
+                    description: "The document containing the symbol",
+                    properties: {
+                        uri: {
+                            type: "string",
+                            description: "URI of the document"
+                        }
+                    },
+                    required: ["uri"]
+                },
+                position: {
+                    type: "object",
+                    description: "The position of the symbol",
+                    properties: {
+                        line: {
+                            type: "number",
+                            description: "Zero-based line number"
+                        },
+                        character: {
+                            type: "number",
+                            description: "Zero-based character position"
+                        }
+                    },
+                    required: ["line", "character"]
+                }
+            },
+            required: ["textDocument", "position"]
+        }
+    },
+    {
+        name: "get_declaration",
+        description: "Finds declarations of a symbol at a specified location. This helps in navigating to where symbols are declared, particularly useful for imported symbols.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                textDocument: {
+                    type: "object",
+                    description: "The document containing the symbol",
+                    properties: {
+                        uri: {
+                            type: "string",
+                            description: "URI of the document"
+                        }
+                    },
+                    required: ["uri"]
+                },
+                position: {
+                    type: "object",
+                    description: "The position of the symbol",
+                    properties: {
+                        line: {
+                            type: "number",
+                            description: "Zero-based line number"
+                        },
+                        character: {
+                            type: "number",
+                            description: "Zero-based character position"
+                        }
+                    },
+                    required: ["line", "character"]
+                }
+            },
+            required: ["textDocument", "position"]
+        }
+    },
+    {
+        name: "get_document_highlights",
+        description: "Finds all highlights of a symbol in a document. This is useful for highlighting all occurrences of a symbol within the current document.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                textDocument: {
+                    type: "object",
+                    description: "The document to analyze",
+                    properties: {
+                        uri: {
+                            type: "string",
+                            description: "URI of the document"
+                        }
+                    },
+                    required: ["uri"]
+                },
+                position: {
+                    type: "object",
+                    description: "The position of the symbol",
+                    properties: {
+                        line: {
+                            type: "number",
+                            description: "Zero-based line number"
+                        },
+                        character: {
+                            type: "number",
+                            description: "Zero-based character position"
+                        }
+                    },
+                    required: ["line", "character"]
+                }
+            },
+            required: ["textDocument", "position"]
+        }
+    },
+    {
+        name: "get_workspace_symbols",
+        description: "Searches for symbols across the entire workspace. This is useful for finding symbols by name across all files. Especially useful for finding the file and positions of a symbol to use in other tools.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                query: {
+                    type: "string",
+                    description: "The search query for finding symbols"
+                }
+            },
+            required: ["query"]
         }
     }
 ];
@@ -696,7 +798,23 @@ export const toolsDescriptions = [
         description: "Gets CodeLens information for a document, showing actionable contextual information inline with code"
     },
     {
-        name: "execute_code_lens",
-        description: "Execute a CodeLens command"
+        name: "get_selection_range",
+        description: "Gets selection ranges for smart selection expansion"
+    },
+    {
+        name: "get_type_definition",
+        description: "Find type definitions of symbols"
+    },
+    {
+        name: "get_declaration",
+        description: "Find declarations of symbols"
+    },
+    {
+        name: "get_document_highlights",
+        description: "Find all highlights of a symbol in document"
+    },
+    {
+        name: "get_workspace_symbols",
+        description: "Search for symbols across the workspace"
     }
 ];

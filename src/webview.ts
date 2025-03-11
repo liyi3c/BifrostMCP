@@ -1,5 +1,7 @@
 import { toolsDescriptions } from './tools';
-const onlyUriTools = ['get_semantic_tokens', 'get_document_symbols', 'get_code_lens'];
+const onlyUriTools = ['get_semantic_tokens', 'get_document_symbols', 'get_code_lens', 'get_workspace_symbols'];
+const noUriTools = ['get_workspace_symbols'];
+
 export const webviewHtml = `
     <!DOCTYPE html>
     <html>
@@ -91,6 +93,7 @@ export const webviewHtml = `
             <div class="tool-section">
                 <div class="tool-title">${tool.name}</div>
                 <div>${tool.description}</div>
+                ${!noUriTools.includes(tool.name) ? `
                 <div class="autocomplete-container">
                     <div style="display: flex; align-items: center;">
                         <input type="text" id="uri-${tool.name}" class="file-input" placeholder="Start typing to search files..." style="flex: 1;">
@@ -98,6 +101,7 @@ export const webviewHtml = `
                     </div>
                     <div id="autocomplete-${tool.name}" class="autocomplete-list"></div>
                 </div>
+                ` : ''}
                 <div class="tool-inputs">
                     ${!onlyUriTools.includes(tool.name) ? `
                         <input type="number" id="line-${tool.name}" placeholder="Line number" style="width: 100px">
@@ -109,9 +113,9 @@ export const webviewHtml = `
                     ${tool.name === 'get_rename_locations' ? `
                         <input type="text" id="newname-${tool.name}" placeholder="New name" style="width: 150px">
                     ` : ''}
-                    ${tool.name === 'execute_code_lens' ? `
-                        <input type="text" id="command-${tool.name}" placeholder="Command" style="width: 150px">
-                    ` : ''} 
+                    ${tool.name === 'get_workspace_symbols' ? `
+                        <input type="text" id="query-${tool.name}" placeholder="Search symbols..." style="width: 200px">
+                    ` : ''}
                 </div>
                 <button onclick="executeTool('${tool.name}')">Execute</button>
                 <pre id="result-${tool.name}">Results will appear here...</pre>
@@ -123,6 +127,9 @@ export const webviewHtml = `
             
             // File autocomplete functionality
             function setupFileAutocomplete(toolName) {
+                if (${JSON.stringify(noUriTools)}.includes(toolName)) {
+                    return;
+                }
                 const input = document.getElementById('uri-' + toolName);
                 const autocompleteList = document.getElementById('autocomplete-' + toolName);
                 let selectedIndex = -1;
@@ -201,6 +208,9 @@ export const webviewHtml = `
             });
 
             function useCurrentFile(toolName) {
+                if (${JSON.stringify(noUriTools)}.includes(toolName)) {
+                    return;
+                }
                 vscode.postMessage({
                     command: 'getCurrentFile',
                     tool: toolName
@@ -208,19 +218,22 @@ export const webviewHtml = `
             }
 
             function executeTool(toolName) {
-                const uri = document.getElementById('uri-' + toolName).value;
-                const line = document.getElementById('line-' + toolName)?.value;
-                const char = document.getElementById('char-' + toolName)?.value;
+                const params = {};
                 
-                const params = {
-                    textDocument: { uri },
-                    position: toolName !== 'get_document_symbols' && toolName !== 'get_semantic_tokens' ? {
+                if (!${JSON.stringify(noUriTools)}.includes(toolName)) {
+                    const uri = document.getElementById('uri-' + toolName).value;
+                    params.textDocument = { uri };
+                }
+
+                if (!${JSON.stringify(onlyUriTools)}.includes(toolName)) {
+                    const line = document.getElementById('line-' + toolName)?.value;
+                    const char = document.getElementById('char-' + toolName)?.value;
+                    params.position = {
                         line: parseInt(line),
                         character: parseInt(char)
-                    } : undefined
-                };
+                    };
+                }
 
-                // Add tool-specific parameters
                 if (toolName === 'get_completions') {
                     const trigger = document.getElementById('trigger-' + toolName)?.value;
                     if (trigger) {
@@ -235,12 +248,11 @@ export const webviewHtml = `
                     }
                 }
 
-                if (toolName === 'execute_code_lens') {
-                    const command = document.getElementById('command-' + toolName)?.value;
-                    if (command) {
-                        params.command = command;
-                    }
+                if (toolName === 'get_workspace_symbols') {
+                    const query = document.getElementById('query-' + toolName)?.value;
+                    params.query = query || '';
                 }
+
                 vscode.postMessage({
                     command: 'execute',
                     tool: toolName,
