@@ -24,6 +24,9 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ## Usage
 
+Follow this video to install and use with cursor. I have also provided sample rules that can be used in .cursorrules files for better results.
+
+[Example Cursor Rules](https://github.com/biegehydra/BifrostMCP/blob/master/ExampleCursorRules.md)
 
 https://github.com/user-attachments/assets/06ddc1e8-52ee-4eaf-9187-daf451f0b1f5
 
