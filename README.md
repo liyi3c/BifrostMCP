@@ -1,4 +1,11 @@
 # Bifrost - VSCode Dev Tools MCP Server
+<a href="https://marketplace.visualstudio.com/items?itemName=ConnorHallman.bifrost-mcp">
+  <img src="https://img.shields.io/visual-studio-marketplace/d/ConnorHallman.bifrost-mcp?label=VSCode%20Extension%20Downloads&cacheSeconds=3600" 
+       alt="VSCode Extension Downloads" 
+       width="250">
+</a>
+
+
 
 This VS Code extension provides a Model Context Protocol (MCP) server that exposes VSCode's powerful development tools and language features to AI tools. It enables advanced code navigation, analysis, and manipulation capabilities when using AI coding assistants that support the MCP protocol.
 
