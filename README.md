@@ -130,4 +130,4 @@ Please feel free to submit issues or pull requests to the [GitHub repository](ht
 
 ## License
 
-This extension is licensed under the MIT License.
+This extension is licensed under the APGL-3.0 License.
