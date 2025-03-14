@@ -1,4 +1,11 @@
 # Bifrost - VSCode Dev Tools MCP Server
+<a href="https://marketplace.visualstudio.com/items?itemName=ConnorHallman.bifrost-mcp">
+  <img src="https://img.shields.io/visual-studio-marketplace/d/ConnorHallman.bifrost-mcp?label=VSCode%20Extension%20Downloads&cacheSeconds=3600" 
+       alt="VSCode Extension Downloads" 
+       width="250">
+</a>
+
+
 
 This VS Code extension provides a Model Context Protocol (MCP) server that exposes VSCode's powerful development tools and language features to AI tools. It enables advanced code navigation, analysis, and manipulation capabilities when using AI coding assistants that support the MCP protocol.
 
@@ -14,6 +21,15 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 - **Code Actions**: Access refactoring suggestions and quick fixes
 - **HTTP/SSE Server**: Exposes language features over an MCP-compatible HTTP server
 - **AI Assistant Integration**: Ready to work with AI assistants that support the MCP protocol
+
+## Usage
+
+Follow this video to install and use with cursor. I have also provided sample rules that can be used in .cursorrules files for better results.
+
+[Example Cursor Rules](https://github.com/biegehydra/BifrostMCP/blob/master/ExampleCursorRules.md)
+
+https://github.com/user-attachments/assets/06ddc1e8-52ee-4eaf-9187-daf451f0b1f5
+
 
 ## Available Tools
 
@@ -112,9 +128,9 @@ If you encounter issues:
 4. Check the VSCode output panel for any error messages
 
 ## Contributing
-
+Here are [Vscodes commands](https://github.com/microsoft/vscode-docs/blob/main/api/references/commands.md?plain=1) if you want to add additional functionality go ahead. I think we still need rename and a few others.
 Please feel free to submit issues or pull requests to the [GitHub repository](https://github.com/biegehydra/csharplangmcpserver).
 
 ## License
 
-This extension is licensed under the MIT License.
+This extension is licensed under the APGL-3.0 License.
