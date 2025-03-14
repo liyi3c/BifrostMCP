@@ -255,18 +255,36 @@ export async function activate(context: vscode.ExtensionContext) {
         app.get('/health', (req: Request, res: Response) => {
             res.status(200).json({ status: 'ok' });
         });
-
-        // Start the server
-        setHttpServer(app.listen(port));
-        
-        // Get the actual port (in case the specified port was busy)
-        const actualPort = (httpServer!.address() as { port: number }).port;
-        console.log(`MCP Server listening on port ${actualPort}`);
+        let currentPort = port;
+        while (true)
+        {
+            try {
+                const serv = app.listen(currentPort);
+                // Start the server
+                setHttpServer(serv);
+            
+                // Get the actual port (in case the specified port was busy)
+                const actualPort = (httpServer!.address() as { port: number }).port;
+                console.log(`MCP Server listening on port ${actualPort}`);
+                break;
+            }
+            catch (error) {
+                if (currentPort < port + 15)
+                {
+                    console.error(`Port ${currentPort} is busy, trying next port...`);
+                    currentPort++;
+                }
+                else {
+                    throw new Error('Error starting HTTP server:' + (error instanceof Error ? error.message : String(error)));
+                
+                }
+            }
+        }
 
         return {
             mcpServer: mcpServer!,
             httpServer: httpServer!,
-            port: actualPort
+            port: currentPort
         };
     }
 }
