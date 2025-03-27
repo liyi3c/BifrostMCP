@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 export interface DocumentSymbolResult {
     name: string;
     detail: string;
-    kind: vscode.SymbolKind;
+    kind: string;
     range: {
         start: { line: number; character: number };
         end: { line: number; character: number };
@@ -18,7 +18,7 @@ export function convertSymbol(symbol: vscode.DocumentSymbol): DocumentSymbolResu
     return {
         name: symbol.name,
         detail: symbol.detail,
-        kind: symbol.kind,
+        kind: getSymbolKindString(symbol.kind),
         range: {
             start: {
                 line: symbol.range.start.line,
@@ -41,6 +41,10 @@ export function convertSymbol(symbol: vscode.DocumentSymbol): DocumentSymbolResu
         },
         children: symbol.children.map(convertSymbol)
     };
+}
+
+export function getSymbolKindString(kind: vscode.SymbolKind): string {
+    return vscode.SymbolKind[kind];
 }
 
 export async function getPreview(uri: vscode.Uri, line: number | undefined): Promise<string> {

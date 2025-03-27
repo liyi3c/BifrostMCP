@@ -176,49 +176,50 @@ export async function activate(context: vscode.ExtensionContext) {
         app.use(cors());
         app.use(express.json());
 
-        // Track transport for message handling
-        let transport: SSEServerTransport | null = null;
-        let messageQueue: Array<{ req: Request; res: Response; body: any }> = [];
+        // Track active transports by session ID
+        const transports: { [sessionId: string]: SSEServerTransport } = {};
 
         // Create SSE endpoint
         app.get('/sse', async (req: Request, res: Response) => {
             console.log('New SSE connection attempt');
             
-            // Set headers for SSE
-            res.setHeader('Content-Type', 'text/event-stream');
-            res.setHeader('Cache-Control', 'no-cache');
-            res.setHeader('Connection', 'keep-alive');
+            // Add timeout configuration
+            req.socket.setTimeout(0); // Disable timeout on the socket
+            req.socket.setNoDelay(true); // Disable Nagle's algorithm
+            req.socket.setKeepAlive(true); // Enable keep-alive
             
             try {
-                // Create and connect transport
-                transport = new SSEServerTransport('/message', res);
+                // Create transport with message endpoint path
+                const transport = new SSEServerTransport('/message', res);
+                const sessionId = transport.sessionId;
+                transports[sessionId] = transport;
+
+                // Add periodic keepalive
+                const keepAliveInterval = setInterval(() => {
+                    if (res.writable) {
+                        res.write(': keepalive\n\n');
+                    }
+                }, 30000); // Send keepalive every 30 seconds
+
+                // Connect transport to MCP server
                 if (mcpServer) {
                     await mcpServer.connect(transport);
-                    console.log('Server connected to SSE transport');
+                    console.log(`Server connected to SSE transport with session ID: ${sessionId}`);
                     
-                    // Process any queued messages
-                    while (messageQueue.length > 0) {
-                        const { req, res, body } = messageQueue.shift()!;
-                        try {
-                            await transport.handlePostMessage(req, res, body);
-                        } catch (error) {
-                            console.error('Error handling queued message:', error);
-                        }
-                    }
+                    // Enhanced connection cleanup
+                    req.on('close', () => {
+                        console.log(`SSE connection closed for session ${sessionId}`);
+                        clearInterval(keepAliveInterval);
+                        delete transports[sessionId];
+                        transport.close().catch(err => {
+                            console.error('Error closing transport:', err);
+                        });
+                    });
                 } else {
                     console.error('MCP Server not initialized');
                     res.status(500).end();
                     return;
                 }
-                
-                // Handle connection close
-                req.on('close', () => {
-                    console.log('SSE connection closed');
-                    transport?.close().catch(err => {
-                        console.error('Error closing transport:', err);
-                    });
-                    transport = null;
-                });
             } catch (error) {
                 console.error('Error in SSE connection:', error);
                 res.status(500).end();
@@ -227,11 +228,20 @@ export async function activate(context: vscode.ExtensionContext) {
         
         // Create message endpoint
         app.post('/message', async (req: Request, res: Response) => {
-            console.log('Received message:', req.body?.method);
+            const sessionId = req.query.sessionId as string;
+            console.log(`Received message for session ${sessionId}:`, req.body?.method);
             
+            const transport = transports[sessionId];
             if (!transport) {
-                console.log('No transport available - queueing message');
-                messageQueue.push({ req, res, body: req.body });
+                console.error(`No transport found for session ${sessionId}`);
+                res.status(400).json({
+                    jsonrpc: "2.0",
+                    id: req.body?.id,
+                    error: {
+                        code: -32000,
+                        message: "No active session found"
+                    }
+                });
                 return;
             }
             

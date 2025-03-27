@@ -69,3 +69,14 @@ export interface ReferencesResponse {
 export interface ReferencesAndPreview extends ReferencesResponse {
     preview: string;
 }
+
+export interface RenameEdit {
+    uri: string;
+    edits: {
+        range: {
+            start: { line: number; character: number; };
+            end: { line: number; character: number; };
+        };
+        newText: string;
+    }[];
+}

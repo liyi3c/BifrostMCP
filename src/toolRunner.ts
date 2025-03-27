@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { createVscodePosition, getPreview, convertSymbol, asyncMap, convertSemanticTokens } from './helpers';
-import { ReferencesAndPreview } from './rosyln';
+import { createVscodePosition, getPreview, convertSymbol, asyncMap, convertSemanticTokens, getSymbolKindString } from './helpers';
+import { ReferencesAndPreview, RenameEdit } from './rosyln';
 import { mcpTools } from './tools';
 
 const toolNames = mcpTools.map((tool) => tool.name);
@@ -195,7 +195,7 @@ export const runTool = async (name: string, args: any) => {
                 newName
             );
             if (renameEdits) {
-                const entries = [];
+                const entries: RenameEdit[] = [];
                 for (const [editUri, edits] of renameEdits.entries()) {
                     entries.push({
                         uri: editUri.toString(),
@@ -581,7 +581,7 @@ export const runTool = async (name: string, args: any) => {
                 result = {
                     item: {
                         name: callHierarchyItems[0].name,
-                        kind: callHierarchyItems[0].kind,
+                        kind: getSymbolKindString(callHierarchyItems[0].kind),
                         detail: callHierarchyItems[0].detail,
                         uri: callHierarchyItems[0].uri.toString(),
                         range: {
@@ -598,7 +598,7 @@ export const runTool = async (name: string, args: any) => {
                     incomingCalls: incomingCalls?.map(call => ({
                         from: {
                             name: call.from.name,
-                            kind: call.from.kind,
+                            kind: getSymbolKindString(call.from.kind),
                             uri: call.from.uri.toString(),
                             range: {
                                 start: {
@@ -625,7 +625,7 @@ export const runTool = async (name: string, args: any) => {
                     outgoingCalls: outgoingCalls?.map(call => ({
                         to: {
                             name: call.to.name,
-                            kind: call.to.kind,
+                            kind: getSymbolKindString(call.to.kind),
                             uri: call.to.uri.toString(),
                             range: {
                                 start: {
@@ -675,7 +675,7 @@ export const runTool = async (name: string, args: any) => {
                 result = {
                     item: {
                         name: typeHierarchyItems[0].name,
-                        kind: typeHierarchyItems[0].kind,
+                        kind: getSymbolKindString(typeHierarchyItems[0].kind),
                         detail: typeHierarchyItems[0].detail,
                         uri: typeHierarchyItems[0].uri.toString(),
                         range: {
@@ -691,7 +691,7 @@ export const runTool = async (name: string, args: any) => {
                     },
                     supertypes: supertypes?.map(type => ({
                         name: type.name,
-                        kind: type.kind,
+                        kind: getSymbolKindString(type.kind),
                         detail: type.detail,
                         uri: type.uri.toString(),
                         range: {
@@ -707,7 +707,7 @@ export const runTool = async (name: string, args: any) => {
                     })),
                     subtypes: subtypes?.map(type => ({
                         name: type.name,
-                        kind: type.kind,
+                        kind: getSymbolKindString(type.kind),
                         detail: type.detail,
                         uri: type.uri.toString(),
                         range: {

@@ -72,7 +72,7 @@ The extension provides access to many VSCode language features including:
 
 ## Requirements
 
-- Visual Studio Code version 1.96.0 or higher
+- Visual Studio Code version 1.93.0 or higher
 - Appropriate language extensions for the languages you want to work with (e.g., C# extension for C# files)
 
 ## Installation
