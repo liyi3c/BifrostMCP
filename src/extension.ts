@@ -3,6 +3,8 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { 
     CallToolRequestSchema, 
+    ListResourcesRequestSchema, 
+    ListResourceTemplatesRequestSchema, 
     ListToolsRequestSchema 
 } from '@modelcontextprotocol/sdk/types.js';
 import express from 'express';
@@ -135,6 +137,14 @@ export async function activate(context: vscode.ExtensionContext) {
             tools: mcpTools
         }));
 
+        mcpServer!.setRequestHandler(ListResourcesRequestSchema, async () => ({
+            resources: []
+        }));
+
+        mcpServer!.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+            templates: []
+        }));
+
         // Add call tool handler
         mcpServer!.setRequestHandler(CallToolRequestSchema, async (request) => {
             try {
@@ -170,6 +180,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 };
             }
         });
+
 
         // Set up Express app
         const app = express();
