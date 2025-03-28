@@ -24,11 +24,39 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ## Usage
 
+### Cline Installation
+Step 1. Install [Supergateway](https://github.com/supercorp-ai/supergateway)
+Step 2. Add config to cline
+
+![Screenshot_78](https://github.com/user-attachments/assets/55588c9e-7f88-4830-b87f-184018873ca1)
+
+
+```json
+{
+  "mcpServers": {
+    "Bifrost": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "supergateway",
+        "--sse",
+        "http://localhost:8008/sse"
+      ],
+      "disabled": false,
+      "autoApprove": [],
+      "timeout": 600
+    }
+  }
+}
+```
+
 Follow this video to install and use with cursor. I have also provided sample rules that can be used in .cursorrules files for better results.
 
 [Example Cursor Rules](https://github.com/biegehydra/BifrostMCP/blob/master/ExampleCursorRules.md)
 
-# FOR NEW VERSIONS OF CURSOR, USE THIS CODE
+#### FOR NEW VERSIONS OF CURSOR, USE THIS CODE
 ```json
 // Full code
 {
@@ -43,6 +71,7 @@ Follow this video to install and use with cursor. I have also provided sample ru
     "url": "localhost:8008/sse"
 }
 ```
+#### Old way to install with cursor
 
 https://github.com/user-attachments/assets/06ddc1e8-52ee-4eaf-9187-daf451f0b1f5
 
