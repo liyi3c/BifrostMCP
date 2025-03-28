@@ -27,6 +27,7 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 ### Cline Installation
 - Step 1. Install [Supergateway](https://github.com/supercorp-ai/supergateway)
 - Step 2. Add config to cline
+- Step 3. It will show up red but seems to work fine
 ```json
 {
   "mcpServers": {
