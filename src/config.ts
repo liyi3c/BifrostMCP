@@ -51,5 +51,8 @@ export function getProjectBasePath(config: BifrostConfig): string {
     if (!config.path) {
         return '';
     }
-    return `/${config.projectName.toLowerCase()}`;
+    if (!config.path.startsWith('/')) {
+        config.path = '/' + config.path;
+    }
+    return `${config.path}`;
 } 
