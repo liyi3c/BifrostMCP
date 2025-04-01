@@ -57,17 +57,12 @@ Follow this video to install and use with cursor. I have also provided sample ru
 
 #### FOR NEW VERSIONS OF CURSOR, USE THIS CODE
 ```json
-// Full code
 {
   "mcpServers": {
     "Bifrost": {
       "url": "localhost:8008/sse"
     }
   }
-}
-// Or add this to the section
-"Bifrost": {
-    "url": "localhost:8008/sse"
 }
 ```
 #### Old way to install with cursor
