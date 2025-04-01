@@ -15,8 +15,21 @@ import { mcpTools } from './tools';
 import { createDebugPanel } from './debugPanel';
 import { mcpServer, httpServer, setMcpServer, setHttpServer } from './globals';
 import { runTool } from './toolRunner';
+import { findBifrostConfig, BifrostConfig, getProjectBasePath } from './config';
 
 export async function activate(context: vscode.ExtensionContext) {
+    let currentConfig: BifrostConfig | null = null;
+
+    // Handle workspace folder changes
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeWorkspaceFolders(async () => {
+            await restartServerWithConfig();
+        })
+    );
+
+    // Initial server start with config
+    await restartServerWithConfig();
+
     // Register debug panel command
     context.subscriptions.push(
         vscode.commands.registerCommand('bifrost-mcp.openDebugPanel', () => {
@@ -24,105 +37,71 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // Start the MCP server
-    try {
-        const serverInfo = await startMcpServer();
-        
-        // Add to disposables for cleanup
-        context.subscriptions.push({
-            dispose: () => {
-                if (serverInfo) {
-                    if (serverInfo.mcpServer) {
-                        serverInfo.mcpServer.close();
-                    }
-                    if (serverInfo.httpServer) {
-                        serverInfo.httpServer.close();
-                    }
-                }
-            }
-        });
-
-        // Show information about the server
-        vscode.window.showInformationMessage(`MCP server running on port ${serverInfo.port}`);
-
-        // Register commands
-        context.subscriptions.push(
-            vscode.commands.registerCommand('bifrost-mcp.startServer', async () => {
-                try {
-                    if (httpServer) {
-                        vscode.window.showInformationMessage(`MCP server is already running on port ${(httpServer.address() as { port: number }).port}`);
-                        return;
-                    }
-                    const serverInfo = await startMcpServer();
-                    vscode.window.showInformationMessage(`MCP server started on port ${serverInfo.port}`);
-                } catch (error) {
-                    const errorMsg = error instanceof Error ? error.message : String(error);
-                    vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
-                }
-            }),
-            vscode.commands.registerCommand('bifrost-mcp.startServerOnPort', async () => {
-                try {
-                    if (httpServer) {
-                        vscode.window.showInformationMessage(`MCP server is already running on port ${(httpServer.address() as { port: number }).port}`);
-                        return;
-                    }
-
-                    const portInput = await vscode.window.showInputBox({
-                        prompt: 'Enter the port number to start the MCP server on',
-                        placeHolder: '8008',
-                        validateInput: (value) => {
-                            const port = parseInt(value);
-                            if (isNaN(port) || port < 1 || port > 65535) {
-                                return 'Please enter a valid port number (1-65535)';
-                            }
-                            return null;
-                        }
-                    });
-
-                    if (portInput === undefined) {
-                        // User cancelled the input
-                        return;
-                    }
-
-                    const port = parseInt(portInput);
-                    const serverInfo = await startMcpServer(port);
-                    vscode.window.showInformationMessage(`MCP server started on port ${serverInfo.port}`);
-                } catch (error) {
-                    const errorMsg = error instanceof Error ? error.message : String(error);
-                    vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
-                }
-            }),
-            vscode.commands.registerCommand('bifrost-mcp.stopServer', async () => {
-                if (!httpServer && !mcpServer) {
-                    vscode.window.showInformationMessage('No MCP server is currently running');
+    // Register commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('bifrost-mcp.startServer', async () => {
+            try {
+                if (httpServer) {
+                    vscode.window.showInformationMessage(`MCP server is already running for project ${currentConfig?.projectName || 'unknown'}`);
                     return;
                 }
-                
-                if (mcpServer) {
-                    mcpServer.close();
-                    setMcpServer(undefined);
-                }
-                
-                if (httpServer) {
-                    httpServer.close();
-                    setHttpServer(undefined);
-                }
-                
-                vscode.window.showInformationMessage('MCP server stopped');
-            })
-        );
-    } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
-        console.error("Failed to start MCP server:", error);
+                await restartServerWithConfig();
+            } catch (error) {
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                vscode.window.showErrorMessage(`Failed to start MCP server: ${errorMsg}`);
+            }
+        }),
+        vscode.commands.registerCommand('bifrost-mcp.stopServer', async () => {
+            if (!httpServer && !mcpServer) {
+                vscode.window.showInformationMessage('No MCP server is currently running');
+                return;
+            }
+            
+            if (mcpServer) {
+                mcpServer.close();
+                setMcpServer(undefined);
+            }
+            
+            if (httpServer) {
+                httpServer.close();
+                setHttpServer(undefined);
+            }
+            
+            vscode.window.showInformationMessage('MCP server stopped');
+        })
+    );
+
+    async function restartServerWithConfig() {
+        // Stop existing server if running
+        if (mcpServer) {
+            mcpServer.close();
+            setMcpServer(undefined);
+        }
+        if (httpServer) {
+            httpServer.close();
+            setHttpServer(undefined);
+        }
+
+        // Get workspace folder
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders || workspaceFolders.length === 0) {
+            console.log('No workspace folder found');
+            return;
+        }
+
+        // Find config in current workspace - will return DEFAULT_CONFIG if none found
+        const config = await findBifrostConfig(workspaceFolders[0]);
+        currentConfig = config!; // We know this is never null since findBifrostConfig always returns DEFAULT_CONFIG
+        await startMcpServer(config!);
     }
 
-    async function startMcpServer(port: number = 8008): Promise<{ mcpServer: Server, httpServer: HttpServer, port: number }> {
-        // Create an MCP Server
+    async function startMcpServer(config: BifrostConfig): Promise<{ mcpServer: Server, httpServer: HttpServer, port: number }> {
+        // Create an MCP Server with project-specific info
         setMcpServer(new Server(
             {
-                name: "language-tools",
+                name: config.projectName,
                 version: "0.1.0",
+                description: config.description
             },
             {
                 capabilities: {
@@ -181,7 +160,6 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
 
-
         // Set up Express app
         const app = express();
         app.use(cors());
@@ -190,34 +168,32 @@ export async function activate(context: vscode.ExtensionContext) {
         // Track active transports by session ID
         const transports: { [sessionId: string]: SSEServerTransport } = {};
 
-        // Create SSE endpoint
-        app.get('/sse', async (req: Request, res: Response) => {
-            console.log('New SSE connection attempt');
+        const basePath = getProjectBasePath(config);
+
+        // Create project-specific SSE endpoint
+        app.get(`${basePath}/sse`, async (req: Request, res: Response) => {
+            console.log(`New SSE connection attempt for project ${config.projectName}`);
             
-            // Add timeout configuration
-            req.socket.setTimeout(0); // Disable timeout on the socket
-            req.socket.setNoDelay(true); // Disable Nagle's algorithm
-            req.socket.setKeepAlive(true); // Enable keep-alive
+            req.socket.setTimeout(0);
+            req.socket.setNoDelay(true);
+            req.socket.setKeepAlive(true);
             
             try {
-                // Create transport with message endpoint path
-                const transport = new SSEServerTransport('/message', res);
+                // Create transport with project-specific message endpoint path
+                const transport = new SSEServerTransport(`${basePath}/message`, res);
                 const sessionId = transport.sessionId;
                 transports[sessionId] = transport;
 
-                // Add periodic keepalive
                 const keepAliveInterval = setInterval(() => {
                     if (res.writable) {
                         res.write(': keepalive\n\n');
                     }
-                }, 30000); // Send keepalive every 30 seconds
+                }, 30000);
 
-                // Connect transport to MCP server
                 if (mcpServer) {
                     await mcpServer.connect(transport);
-                    console.log(`Server connected to SSE transport with session ID: ${sessionId}`);
+                    console.log(`Server connected to SSE transport with session ID: ${sessionId} for project ${config.projectName}`);
                     
-                    // Enhanced connection cleanup
                     req.on('close', () => {
                         console.log(`SSE connection closed for session ${sessionId}`);
                         clearInterval(keepAliveInterval);
@@ -237,10 +213,10 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
         
-        // Create message endpoint
-        app.post('/message', async (req: Request, res: Response) => {
+        // Create project-specific message endpoint
+        app.post(`${basePath}/message`, async (req: Request, res: Response) => {
             const sessionId = req.query.sessionId as string;
-            console.log(`Received message for session ${sessionId}:`, req.body?.method);
+            console.log(`Received message for session ${sessionId} in project ${config.projectName}:`, req.body?.method);
             
             const transport = transports[sessionId];
             if (!transport) {
@@ -272,41 +248,30 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         });
         
-        // Add health check endpoint
-        app.get('/health', (req: Request, res: Response) => {
-            res.status(200).json({ status: 'ok' });
+        // Add project-specific health check endpoint
+        app.get(`${basePath}/health`, (req: Request, res: Response) => {
+            res.status(200).json({ 
+                status: 'ok',
+                project: config.projectName,
+                description: config.description
+            });
         });
-        let currentPort = port;
-        while (true)
-        {
-            try {
-                const serv = app.listen(currentPort);
-                // Start the server
-                setHttpServer(serv);
-            
-                // Get the actual port (in case the specified port was busy)
-                const actualPort = (httpServer!.address() as { port: number }).port;
-                console.log(`MCP Server listening on port ${actualPort}`);
-                break;
-            }
-            catch (error) {
-                if (currentPort < port + 15)
-                {
-                    console.error(`Port ${currentPort} is busy, trying next port...`);
-                    currentPort++;
-                }
-                else {
-                    throw new Error('Error starting HTTP server:' + (error instanceof Error ? error.message : String(error)));
-                
-                }
-            }
-        }
 
-        return {
-            mcpServer: mcpServer!,
-            httpServer: httpServer!,
-            port: currentPort
-        };
+        try {
+            const serv = app.listen(config.port);
+            setHttpServer(serv);
+            vscode.window.showInformationMessage(`MCP server listening on http://localhost:${config.port}${basePath}`);
+            console.log(`MCP Server for project ${config.projectName} listening on http://localhost:${config.port}${basePath}`);
+            return {
+                mcpServer: mcpServer!,
+                httpServer: httpServer!,
+                port: config.port
+            };
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            vscode.window.showErrorMessage(`Failed to start server on configured port ${config.port}${basePath}. Please check if the port is available or configure a different port in bifrost.config.json. Error: ${errorMsg}`);
+            throw new Error(`Failed to start server on configured port ${config.port}. Please check if the port is available or configure a different port in bifrost.config.json. Error: ${errorMsg}`);
+        }
     }
 }
 

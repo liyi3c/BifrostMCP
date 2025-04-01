@@ -74,6 +74,88 @@ Follow this video to install and use with cursor. I have also provided sample ru
 
 https://github.com/user-attachments/assets/06ddc1e8-52ee-4eaf-9187-daf451f0b1f5
 
+## Multiple Project Support
+
+When working with multiple projects, each project can have its own dedicated MCP server endpoint and port. This is useful when you have multiple VS Code windows open or are working with multiple projects that need language server capabilities.
+
+### Project Configuration
+
+Create a `bifrost.config.json` file in your project root:
+
+```json
+{
+    "projectName": "MyProject",
+    "description": "Description of your project",
+    "path": "/my-project",
+    "port": 5642
+}
+```
+
+The server will use this configuration to:
+- Create project-specific endpoints (e.g., `http://localhost:5642/my-project/sse`)
+- Provide project information to AI assistants
+- Use a dedicated port for each project
+- Isolate project services from other running instances
+
+### Example Configurations
+
+1. Backend API Project:
+```json
+{
+    "projectName": "BackendAPI",
+    "description": "Node.js REST API with TypeScript",
+    "path": "/backend-api",
+    "port": 5643
+}
+```
+
+2. Frontend Web App:
+```json
+{
+    "projectName": "FrontendApp",
+    "description": "React frontend application",
+    "path": "/frontend-app",
+    "port": 5644
+}
+```
+
+### Port Configuration
+
+Each project should specify its own unique port to avoid conflicts when multiple VS Code instances are running:
+
+- The `port` field in `bifrost.config.json` determines which port the server will use
+- If no port is specified, it defaults to 8008 for backwards compatibility
+- Choose different ports for different projects to ensure they can run simultaneously
+- The server will fail to start if the configured port is already in use, requiring you to either:
+  - Free up the port
+  - Change the port in the config
+  - Close the other VS Code instance using that port
+
+### Connecting to Project-Specific Endpoints
+
+Update your AI assistant configuration to use the project-specific endpoint and port:
+
+```json
+{
+  "mcpServers": {
+    "BackendAPI": {
+      "url": "localhost:5643/backend-api/sse"
+    },
+    "FrontendApp": {
+      "url": "localhost:5644/frontend-app/sse"
+    }
+  }
+}
+```
+
+### Backwards Compatibility
+
+If no `bifrost.config.json` is present, the server will use the default configuration:
+- Port: 8008
+- SSE endpoint: `http://localhost:8008/sse`
+- Message endpoint: `http://localhost:8008/message`
+
+This maintains compatibility with existing configurations and tools.
 
 ## Available Tools
 
