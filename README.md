@@ -65,9 +65,6 @@ Follow this video to install and use with cursor. I have also provided sample ru
   }
 }
 ```
-#### Old way to install with cursor
-
-https://github.com/user-attachments/assets/06ddc1e8-52ee-4eaf-9187-daf451f0b1f5
 
 ## Multiple Project Support
 
