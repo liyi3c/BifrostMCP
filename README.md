@@ -60,7 +60,7 @@ Follow this video to install and use with cursor. I have also provided sample ru
 {
   "mcpServers": {
     "Bifrost": {
-      "url": "localhost:8008/sse"
+      "url": "http://localhost:8008/sse"
     }
   }
 }
@@ -131,10 +131,10 @@ Update your AI assistant configuration to use the project-specific endpoint and 
 {
   "mcpServers": {
     "BackendAPI": {
-      "url": "localhost:5643/backend-api/sse"
+      "url": "http://localhost:5643/backend-api/sse"
     },
     "FrontendApp": {
-      "url": "localhost:5644/frontend-app/sse"
+      "url": "http://localhost:5644/frontend-app/sse"
     }
   }
 }
