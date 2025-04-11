@@ -5,8 +5,6 @@
        width="250">
 </a>
 
-
-
 This VS Code extension provides a Model Context Protocol (MCP) server that exposes VSCode's powerful development tools and language features to AI tools. It enables advanced code navigation, analysis, and manipulation capabilities when using AI coding assistants that support the MCP protocol.
 
 ![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/cursor.png)
@@ -212,6 +210,10 @@ The extension will automatically start an MCP server when activated. To configur
 - `Bifrost MCP: Open Debug Panel` - Open the debug panel to test available tools
 
 ![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/commands.png)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=biegehydra/BifrostMCP&type=Date)](https://star-history.com/#biegehydra/BifrostMCP&Date)
 
 ## Example Tool Usage
 
