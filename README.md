@@ -26,6 +26,8 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 - Step 1. Install [Supergateway](https://github.com/supercorp-ai/supergateway)
 - Step 2. Add config to cline
 - Step 3. It will show up red but seems to work fine
+
+#### Windows Config
 ```json
 {
   "mcpServers": {
@@ -34,6 +36,26 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
       "args": [
         "/c",
         "npx",
+        "-y",
+        "supergateway",
+        "--sse",
+        "http://localhost:8008/sse"
+      ],
+      "disabled": false,
+      "autoApprove": [],
+      "timeout": 600
+    }
+  }
+}
+```
+
+#### Mac/Linux Config
+```json
+{
+  "mcpServers": {
+    "Bifrost": {
+      "command": "npx",
+      "args": [
         "-y",
         "supergateway",
         "--sse",
