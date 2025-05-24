@@ -14,7 +14,7 @@ export const mcpTools = [
             "- Safely planning refactoring operations\n" +
             "- Analyzing the impact of potential changes\n" +
             "- Tracing data flow through the application\n\n" +
-            "Note: Line numbers are 1-based (first line is 1), while character positions are 0-based (first character is 0).",
+            "Note: Line numbers are 0-based (first line is 0), while character positions are 0-based (first character is 0).",
         inputSchema: {
             type: "object",
             properties: {
@@ -72,7 +72,7 @@ export const mcpTools = [
             "- Understanding where code elements are defined\n" +
             "- Navigating complex codebases\n" +
             "- Verifying the actual implementation of interfaces/abstractions\n\n" +
-            "Note: Line numbers are 1-based (first line is 1), while character positions are 0-based (first character is 0).",
+            "Note: Line numbers are 0-based (first line is 0), while character positions are 0-based (first character is 0).",
         inputSchema: {
             type: "object",
             properties: {
@@ -119,7 +119,7 @@ export const mcpTools = [
             "- Finding all concrete implementations of an interface\n" +
             "- Analyzing inheritance hierarchies\n" +
             "- Verifying contract implementations\n\n" +
-            "Note: Line numbers are 1-based (first line is 1), while character positions are 0-based (first character is 0).",
+            "Note: Line numbers are 0-based (first line is 0), while character positions are 0-based (first character is 0).",
         inputSchema: {
             type: "object",
             properties: {
@@ -167,7 +167,7 @@ export const mcpTools = [
             "- Viewing documentation without leaving the context\n" +
             "- Verifying type information during development\n" +
             "- Quick access to symbol metadata\n\n" +
-            "Note: Line numbers are 1-based (first line is 1), while character positions are 0-based (first character is 0).",
+            "Note: Line numbers are 0-based (first line is 0), while character positions are 0-based (first character is 0).",
         inputSchema: {
             type: "object",
             properties: {

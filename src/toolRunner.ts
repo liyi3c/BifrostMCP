@@ -79,7 +79,7 @@ export const runTool = async (name: string, args: any) => {
         case "go_to_definition":
             command = 'vscode.executeDefinitionProvider';
             commandResult = await vscode.commands.executeCommand(command, uri, position);
-            result = commandResult?.map((def: vscode.Location) => ({
+            result = await asyncMap(commandResult, async (def: vscode.Location) => ({
                 uri: def.uri.toString(),
                 range: {
                     start: {
@@ -90,7 +90,8 @@ export const runTool = async (name: string, args: any) => {
                         line: def.range.end.line,
                         character: def.range.end.character
                     }
-                }
+                },
+                preview: await getPreview(uri, def.range?.start.line)
             }));
             break;
 
@@ -116,7 +117,7 @@ export const runTool = async (name: string, args: any) => {
         case "get_hover_info":
             command = 'vscode.executeHoverProvider';
             commandResult = await vscode.commands.executeCommand(command, uri, position);
-            result = commandResult?.map((hover: vscode.Hover) => ({
+            result = await asyncMap(commandResult, async (hover: vscode.Hover) => ({
                 contents: hover.contents.map(content => 
                     typeof content === 'string' ? content : content.value
                 ),
@@ -130,7 +131,7 @@ export const runTool = async (name: string, args: any) => {
                         character: hover.range.end.character
                     }
                 } : undefined,
-                preview: getPreview(uri, hover.range?.start.line)
+                preview: await getPreview(uri, hover.range?.start.line)
             }));
             break;
 

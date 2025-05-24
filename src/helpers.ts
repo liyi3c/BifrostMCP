@@ -48,24 +48,24 @@ export function getSymbolKindString(kind: vscode.SymbolKind): string {
 }
 
 export async function getPreview(uri: vscode.Uri, line: number | undefined): Promise<string> {
-    if (!line) {
+    if (line === null || line === undefined) {
         return "";
     }
-        const document = await vscode.workspace.openTextDocument(uri);
+    const document = await vscode.workspace.openTextDocument(uri);
     const lineText = document.lineAt(line).text.trim();
     return lineText;
 }
  
 export function createVscodePosition(line: number, character: number): vscode.Position | undefined {
-    if (!line) {
+    if (line === null || line === undefined) {
         return undefined;
     }
-    if (!character) {
+    if (character === null || character === undefined) {
         return undefined;
     }
     return new vscode.Position(
-        line - 1,
-        character
+        Math.max(line, 0),
+        Math.max(character, 0)
     );
 }
 
