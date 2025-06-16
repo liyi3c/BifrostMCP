@@ -22,6 +22,13 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ## Usage
 
+### LLm Rules
+I have also provided sample rules that can be used in .cursorrules files for better results.
+
+[Example Cursor Rules](https://github.com/biegehydra/BifrostMCP/blob/master/ExampleCursorRules.md)
+
+[Example MDC Rules](https://github.com/biegehydra/BifrostMCP/blob/master/example.mdc)
+
 ### Cline Installation
 - Step 1. Install [Supergateway](https://github.com/supercorp-ai/supergateway)
 - Step 2. Add config to cline
@@ -83,10 +90,7 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ![Screenshot_78](https://github.com/user-attachments/assets/55588c9e-7f88-4830-b87f-184018873ca1)
 
-Follow this video to install and use with cursor. I have also provided sample rules that can be used in .cursorrules files for better results.
-
-[Example Cursor Rules](https://github.com/biegehydra/BifrostMCP/blob/master/ExampleCursorRules.md)
-[Example MDC Rules](https://github.com/biegehydra/BifrostMCP/blob/master/example.mdc)
+Follow this video to install and use with cursor
 
 #### FOR NEW VERSIONS OF CURSOR, USE THIS CODE
 ```json
