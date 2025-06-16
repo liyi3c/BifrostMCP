@@ -22,7 +22,7 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ## Usage
 
-### LLm Rules
+### LLM Rules
 I have also provided sample rules that can be used in .cursorrules files for better results.
 
 [Example Cursor Rules](https://github.com/biegehydra/BifrostMCP/blob/master/ExampleCursorRules.md)
