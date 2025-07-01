@@ -197,7 +197,8 @@ The extension provides access to many VSCode language features including:
 * **get\_document\_symbols**: Outline all symbols in a file.
 * **get\_completions**: Context-aware auto-completions.
 * **get\_signature\_help**: Function parameter hints and overloads.
-* **get\_rename\_locations**: Safely rename symbols across the project.
+* **get\_rename\_locations**: Safely get location of places to perform a rename across the project.
+* **rename**: Perform rename on a symbol
 * **get\_code\_actions**: Quick fixes, refactors, and improvements.
 * **get\_semantic\_tokens**: Enhanced highlighting data.
 * **get\_call\_hierarchy**: See incoming/outgoing call relationships.
@@ -287,8 +288,7 @@ If you encounter issues:
 4. Check the VSCode output panel for any error messages
 
 ## Contributing
-Here are [Vscodes commands](https://github.com/microsoft/vscode-docs/blob/main/api/references/commands.md?plain=1) if you want to add additional f
-unctionality go ahead. I think we still need rename and a few others.
+Here are [Vscodes commands](https://github.com/microsoft/vscode-docs/blob/main/api/references/commands.md?plain=1) if you want to add additional functionality go ahead. I think we still need rename and a few others.
 Please feel free to submit issues or pull requests to the [GitHub repository](https://github.com/biegehydra/csharplangmcpserver).
 
 `vsce package`
