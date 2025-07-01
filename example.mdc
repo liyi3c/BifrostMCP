@@ -43,6 +43,7 @@ You are in a workspace with Bifrost MCP tools enabled. Use them for code navigat
 - get_hover_info: Get type, signature, and documentation for a symbol.
 - get_signature_help: Get function/method parameter info as you type.
 - get_rename_locations: Find all locations to update when renaming a symbol.
+- rename: Rename a symbol.
 - get_type_definition: Find underlying type definitions.
 - get_declaration: Find where a symbol is declared.
 - get_document_highlights: Highlight all occurrences of a symbol in a document.

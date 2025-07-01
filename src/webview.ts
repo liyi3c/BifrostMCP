@@ -110,7 +110,7 @@ export const webviewHtml = `
                     ${tool.name === 'get_completions' ? `
                         <input type="text" id="trigger-${tool.name}" placeholder="Trigger character" style="width: 50px" maxlength="1">
                     ` : ''}
-                    ${tool.name === 'get_rename_locations' ? `
+                    ${tool.name === 'get_rename_locations' || tool.name === 'rename' ? `
                         <input type="text" id="newname-${tool.name}" placeholder="New name" style="width: 150px">
                     ` : ''}
                     ${tool.name === 'get_workspace_symbols' ? `
@@ -241,7 +241,7 @@ export const webviewHtml = `
                     }
                 }
 
-                if (toolName === 'get_rename_locations') {
+                if (toolName === 'get_rename_locations' || toolName === 'rename') {
                     const newName = document.getElementById('newname-' + toolName)?.value;
                     if (newName) {
                         params.newName = newName;
