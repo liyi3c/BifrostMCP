@@ -36,7 +36,7 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ### Installation
 
-1. Install this extension from the VS Code marketplace
+1. Install ![the extension](https://marketplace.visualstudio.com/items?itemName=ConnorHallman.bifrost-mcp) from the VS Code marketplace
 2. Install any language-specific extensions you need for your development
 3. Open your project in VS Code
 
