@@ -187,7 +187,7 @@ export const runTool = async (name: string, args: any) => {
             }));
             break;
 
-        case "get_rename_locations":
+        case "get_rename_locations": {
             const newName = args?.newName || "newName";
             const renameEdits = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
                 'vscode.executeDocumentRenameProvider',
@@ -220,6 +220,36 @@ export const runTool = async (name: string, args: any) => {
                 result = [];
             }
             break;
+        }
+       
+        case "rename": {
+            const newName = args?.newName || "newName";
+            const renameEdits = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
+                'vscode.executeDocumentRenameProvider',
+                uri,
+                position,
+                newName
+            );
+            if (renameEdits) {
+                const success = await vscode.workspace.applyEdit(renameEdits);
+                return {
+                    content: [{
+                        type: "text",
+                        text: success ? "Symbol renamed successfully" : "Symbol renaming failed"
+                    }],
+                    isError: false
+                };
+            } else {
+                return {
+                    content: [{
+                        type: "text",
+                        text: "Symbol to rename not found"
+                    }],
+                    isError: false
+                };
+            }
+            break;
+        }
 
         case "get_code_actions":
             const codeActions = await vscode.commands.executeCommand<vscode.CodeAction[]>(

@@ -386,6 +386,57 @@ export const mcpTools = [
         }
     },
     {
+        name: "rename",
+        description: "Identifies all locations that need to be updated when renaming a symbol, and performs the renaming. " +
+            "This tool performs a comprehensive analysis to ensure safe and accurate renaming by:\n" +
+            "- Finding all references to the symbol\n" +
+            "- Checking for naming conflicts\n" +
+            "- Analyzing scope boundaries\n" +
+            "- Identifying related declarations\n\n" +
+            "The tool is particularly valuable for:\n" +
+            "- Safe refactoring operations\n" +
+            "- Cross-file symbol renaming\n" +
+            "- Maintaining code consistency\n\n" +
+            "- Renaming without the need to generate code\n\n" +
+            "Note: Line numbers are 0-based (first line is 0), and character positions are 0-based (first character is 0).",
+        inputSchema: {
+            type: "object",
+            properties: {
+                textDocument: {
+                    type: "object",
+                    description: "The document containing the symbol to rename",
+                    properties: {
+                        uri: {
+                            type: "string",
+                            description: "URI of the document"
+                        }
+                    },
+                    required: ["uri"]
+                },
+                position: {
+                    type: "object",
+                    description: "The position of the symbol to rename",
+                    properties: {
+                        line: {
+                            type: "number",
+                            description: "Zero-based line number"
+                        },
+                        character: {
+                            type: "number",
+                            description: "Zero-based character position"
+                        }
+                    },
+                    required: ["line", "character"]
+                },
+                newName: {
+                    type: "string",
+                    description: "The new name for the symbol"
+                }
+            },
+            required: ["textDocument", "position", "newName"]
+        }
+    },
+    {
         name: "get_code_actions",
         description: "Provides context-aware code actions and refactoring suggestions at a specified location. " +
             "This tool analyzes the code to offer intelligent improvements such as:\n" +
@@ -776,6 +827,10 @@ export const toolsDescriptions = [
     {
         name: "get_rename_locations",
         description: "Get all locations that would be affected by renaming a symbol"
+    },
+    {
+        name: "rename",
+        description: "Rename a symbol"
     },
     {
         name: "get_code_actions",
