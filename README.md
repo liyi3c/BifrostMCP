@@ -9,6 +9,18 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 
 ![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/cursor.png)
 
+## Table of Contents
+- [Features](#features)
+- [Installation/Usage](#usage)
+- [Multi-Project Support](#multiple-project-support)
+- [Available Tools](#available-tools)
+- [Installation](#installation)
+- [Available Commands](#available-commands)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [Debugging](#debugging)
+- [License](#license)
+
 ## Features
 
 - **Language Server Integration**: Access VSCode's language server capabilities for any supported language
@@ -21,6 +33,21 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 - **AI Assistant Integration**: Ready to work with AI assistants that support the MCP protocol
 
 ## Usage
+
+### Installation
+
+1. Install this extension from the VS Code marketplace
+2. Install any language-specific extensions you need for your development
+3. Open your project in VS Code
+
+### Configuration
+
+The extension will automatically start an MCP server when activated. To configure an AI assistant to use this server:
+
+1. The server runs on port 8008 by default (configurable with `bifrost.config.json`)
+2. Configure your MCP-compatible AI assistant to connect to:
+   - SSE endpoint: `http://localhost:8008/sse`
+   - Message endpoint: `http://localhost:8008/message`
 
 ### LLM Rules
 I have also provided sample rules that can be used in .cursorrules files for better results.
@@ -215,21 +242,6 @@ The extension provides access to many VSCode language features including:
 - Visual Studio Code version 1.93.0 or higher
 - Appropriate language extensions for the languages you want to work with (e.g., C# extension for C# files)
 
-## Installation
-
-1. Install this extension from the VS Code marketplace
-2. Install any language-specific extensions you need for your development
-3. Open your project in VS Code
-
-## Usage
-
-The extension will automatically start an MCP server when activated. To configure an AI assistant to use this server:
-
-1. The server runs on port 8008 by default
-2. Configure your MCP-compatible AI assistant to connect to:
-   - SSE endpoint: `http://localhost:8008/sse`
-   - Message endpoint: `http://localhost:8008/message`
-
 ### Available Commands
 
 - `Bifrost MCP: Start Server` - Manually start the MCP server on port 8008
@@ -274,10 +286,6 @@ The extension will automatically start an MCP server when activated. To configur
 }
 ```
 
-## Debugging
-Use the `MCP: Open Debug Panel` command
-![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/debug_panel.png)
-
 ## Troubleshooting
 
 If you encounter issues:
@@ -292,6 +300,10 @@ Here are [Vscodes commands](https://github.com/microsoft/vscode-docs/blob/main/a
 Please feel free to submit issues or pull requests to the [GitHub repository](https://github.com/biegehydra/csharplangmcpserver).
 
 `vsce package`
+
+## Debugging
+Use the `MCP: Open Debug Panel` command
+![image](https://raw.githubusercontent.com/biegehydra/BifrostMCP/refs/heads/master/src/images/debug_panel.png)
 
 ## License
 
