@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createVscodePosition, getPreview, convertSymbol, asyncMap, convertSemanticTokens, getSymbolKindString } from './helpers';
+import { createVscodePosition, getPreview, convertSymbol, asyncMap, convertSemanticTokens, getSymbolKindString, transformLocations, transformSingleLocation } from './helpers';
 import { ReferencesAndPreview, RenameEdit } from './rosyln';
 import { mcpTools } from './tools';
 
@@ -45,73 +45,23 @@ export const runTool = async (name: string, args: any) => {
                 result = [];
                 break;
             }
-
-            // Convert VSCode locations to our response format with previews
-            const references: ReferencesAndPreview[] = [];
-            
-            for (const location of locations) {
-                try {
-                    const document = await vscode.workspace.openTextDocument(location.uri);
-                    const preview = document.lineAt(location.range.start.line).text.trim();
-                    
-                    references.push({
-                        uri: location.uri.toString(),
-                        range: {
-                            start: {
-                                line: location.range.start.line,
-                                character: location.range.start.character
-                            },
-                            end: {
-                                line: location.range.end.line,
-                                character: location.range.end.character
-                            }
-                        },
-                        preview
-                    });
-                } catch (error) {
-                    console.warn(`Failed to get preview for reference: ${error}`);
-                    // Continue with other references even if one preview fails
-                }
-            }
+            const references: ReferencesAndPreview[] = await asyncMap(
+                locations,
+                transformSingleLocation
+            );
             result = references;
             break;
 
         case "go_to_definition":
             command = 'vscode.executeDefinitionProvider';
             commandResult = await vscode.commands.executeCommand(command, uri, position);
-            result = await asyncMap(commandResult, async (def: vscode.Location) => ({
-                uri: def.uri.toString(),
-                range: {
-                    start: {
-                        line: def.range.start.line,
-                        character: def.range.start.character
-                    },
-                    end: {
-                        line: def.range.end.line,
-                        character: def.range.end.character
-                    }
-                },
-                preview: await getPreview(def.uri, def.range?.start.line)
-            }));
+            result = await transformLocations(commandResult);
             break;
 
         case "find_implementations":
             command = 'vscode.executeImplementationProvider';
             commandResult = await vscode.commands.executeCommand(command, uri, position);
-            result = await asyncMap(commandResult, async (impl: vscode.Location) => ({
-                uri: impl.uri.toString(),   
-                range: {
-                    start: {
-                        line: impl.range.start.line,
-                        character: impl.range.start.character
-                    },
-                    end: {
-                        line: impl.range.end.line,
-                        character: impl.range.end.character
-                    }
-                },
-                preview: await getPreview(uri, impl.range?.start.line)
-            }));    
+            result = await transformLocations(commandResult);
             break;
 
         case "get_hover_info":
@@ -357,101 +307,15 @@ export const runTool = async (name: string, args: any) => {
             break;
 
         case "get_type_definition":
-            const typeDefinitions = await vscode.commands.executeCommand<vscode.Location[] | vscode.LocationLink[]>(
-                'vscode.executeTypeDefinitionProvider',
-                uri,
-                position
-            );
-            result = typeDefinitions?.map(loc => {
-                if ('targetUri' in loc) {
-                    return {
-                        targetUri: loc.targetUri.toString(),
-                        targetRange: {
-                            start: {
-                                line: loc.targetRange.start.line,
-                                character: loc.targetRange.start.character
-                            },
-                            end: {
-                                line: loc.targetRange.end.line,
-                                character: loc.targetRange.end.character
-                            }
-                        },
-                        originSelectionRange: loc.originSelectionRange ? {
-                            start: {
-                                line: loc.originSelectionRange.start.line,
-                                character: loc.originSelectionRange.start.character
-                            },
-                            end: {
-                                line: loc.originSelectionRange.end.line,
-                                character: loc.originSelectionRange.end.character
-                            }
-                        } : undefined
-                    };
-                } else {
-                    return {
-                        uri: loc.uri.toString(),
-                        range: {
-                            start: {
-                                line: loc.range.start.line,
-                                character: loc.range.start.character
-                            },
-                            end: {
-                                line: loc.range.end.line,
-                                character: loc.range.end.character
-                            }
-                        }
-                    };
-                }
-            });
+            command = 'vscode.executeTypeDefinitionProvider';
+            commandResult = await vscode.commands.executeCommand(command, uri, position);
+            result = await transformLocations(commandResult);
             break;
 
         case "get_declaration":
-            const declarations = await vscode.commands.executeCommand<vscode.Location[] | vscode.LocationLink[]>(
-                'vscode.executeDeclarationProvider',
-                uri,
-                position
-            );
-            result = declarations?.map(loc => {
-                if ('targetUri' in loc) {
-                    return {
-                        targetUri: loc.targetUri.toString(),
-                        targetRange: {
-                            start: {
-                                line: loc.targetRange.start.line,
-                                character: loc.targetRange.start.character
-                            },
-                            end: {
-                                line: loc.targetRange.end.line,
-                                character: loc.targetRange.end.character
-                            }
-                        },
-                        originSelectionRange: loc.originSelectionRange ? {
-                            start: {
-                                line: loc.originSelectionRange.start.line,
-                                character: loc.originSelectionRange.start.character
-                            },
-                            end: {
-                                line: loc.originSelectionRange.end.line,
-                                character: loc.originSelectionRange.end.character
-                            }
-                        } : undefined
-                    };
-                } else {
-                    return {
-                        uri: loc.uri.toString(),
-                        range: {
-                            start: {
-                                line: loc.range.start.line,
-                                character: loc.range.start.character
-                            },
-                            end: {
-                                line: loc.range.end.line,
-                                character: loc.range.end.character
-                            }
-                        }
-                    };
-                }
-            });
+            command = 'vscode.executeDeclarationProvider';
+            commandResult = await vscode.commands.executeCommand(command, uri, position);
+            result = await transformLocations(commandResult);
             break;
 
         case "get_document_highlights":

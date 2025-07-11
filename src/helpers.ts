@@ -51,9 +51,14 @@ export async function getPreview(uri: vscode.Uri, line: number | undefined): Pro
     if (line === null || line === undefined) {
         return "";
     }
-    const document = await vscode.workspace.openTextDocument(uri);
-    const lineText = document.lineAt(line).text.trim();
-    return lineText;
+    try{
+        const document = await vscode.workspace.openTextDocument(uri);
+        const lineText = document.lineAt(line).text.trim();
+        return lineText;
+    } catch (error) {
+        console.error(`Error getting preview for ${uri}: ${error}`);
+        return "Failed to get preview";
+    }
 }
  
 export function createVscodePosition(line: number, character: number): vscode.Position | undefined {
@@ -126,4 +131,31 @@ export function convertSemanticTokens(semanticTokens: vscode.SemanticTokens, doc
 
     return tokens;
 }
+
+export const transformSingleLocation = async (loc: vscode.Location | vscode.LocationLink): Promise<any> => {
+    const uri = 'targetUri' in loc ? loc.targetUri : loc.uri;
+    const range = 'targetRange' in loc ? loc.targetRange : loc.range;
+    
+    return {
+        uri: uri.toString(),
+        range: range ? {
+            start: {
+                line: range.start.line,
+                character: range.start.character
+            },
+            end: {
+                line: range.end.line,
+                character: range.end.character
+            }
+        } : undefined,
+        preview: await getPreview(uri, range?.start.line)
+    };
+};
+
+export const transformLocations = async (locations: (vscode.Location | vscode.LocationLink)[]): Promise<any[]> => {
+    if (!locations) {
+        return [];
+    }
+    return asyncMap(locations, transformSingleLocation);
+};
 
