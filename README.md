@@ -14,7 +14,6 @@ This VS Code extension provides a Model Context Protocol (MCP) server that expos
 - [Installation/Usage](#usage)
 - [Multi-Project Support](#multiple-project-support)
 - [Available Tools](#available-tools)
-- [Installation](#installation)
 - [Available Commands](#available-commands)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
