@@ -567,7 +567,7 @@ export const mcpTools = [
                     description: "The number of levels to recursively trace incoming calls. Default is 3."
                 }
             },
-            required: ["textDocument", "position"]
+            required: ["textDocument", "position", "call_level"]
         }
     },
     {
