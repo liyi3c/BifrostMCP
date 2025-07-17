@@ -519,20 +519,65 @@ export const mcpTools = [
         }
     },
     {
-        name: "get_call_hierarchy",
-        description: "Analyzes and visualizes the call relationships between functions and methods in the codebase. " +
-            "This tool builds a comprehensive call graph showing:\n" +
-            "- Incoming calls (who calls this function)\n" +
-            "- Outgoing calls (what this function calls)\n" +
-            "- Call chains and dependencies\n" +
-            "- Recursive call patterns\n\n" +
-            "This information is invaluable for:\n" +
-            "- Understanding code flow and dependencies\n" +
-            "- Analyzing impact of changes\n" +
+        name: "get_incoming_call_hierarchy",
+        description:
+            "Analyzes and visualizes the incoming call relationships for a specified function or method. " +
+            "This tool returns only incoming calls (who calls this function), including:\n" +
+            "- Which functions/methods call this function\n" +
+            "- The exact location and range of each call\n" +
+            "- Detailed information about the caller (name, kind, URI, range)\n\n" +
+            "Useful for:\n" +
+            "- Understanding code inflow and dependencies\n" +
+            "- Impact analysis and dependency tracing\n" +
             "- Debugging complex call chains\n" +
-            "- Optimizing function relationships\n" +
-            "- Identifying potential refactoring targets\n\n" +
-            "Note: Line numbers are 0-based (first line is 0), and character positions are 0-based (first character is 0).",
+            "- Identifying refactoring targets\n\n" +
+            "Note: Line and character positions are zero-based.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                textDocument: {
+                    type: "object",
+                    description: "The document containing the function",
+                    properties: {
+                        uri: {
+                            type: "string",
+                            description: "URI of the document"
+                        }
+                    },
+                    required: ["uri"]
+                },
+                position: {
+                    type: "object",
+                    description: "The position of the function",
+                    properties: {
+                        line: {
+                            type: "number",
+                            description: "Zero-based line number"
+                        },
+                        character: {
+                            type: "number",
+                            description: "Zero-based character position"
+                        }
+                    },
+                    required: ["line", "character"]
+                }
+            },
+            required: ["textDocument", "position"]
+        }
+    },
+    {
+        name: "get_outgoing_call_hierarchy",
+        description:
+            "Analyzes and visualizes the outgoing call relationships for a specified function or method. " +
+            "This tool returns only outgoing calls (which functions are called by this function), including:\n" +
+            "- List of called functions/methods\n" +
+            "- The exact location and range of each call\n" +
+            "- Detailed information about the callee (name, kind, URI, range)\n\n" +
+            "Useful for:\n" +
+            "- Understanding code outflow and dependencies\n" +
+            "- Analyzing call chains and dependencies\n" +
+            "- Optimizing and refactoring call structures\n\n" +
+            "Note: Line and character positions are zero-based.",
         inputSchema: {
             type: "object",
             properties: {
@@ -841,8 +886,12 @@ export const toolsDescriptions = [
         description: "Get semantic token information for code understanding"
     },
     {
-        name: "get_call_hierarchy",
-        description: "Get incoming and outgoing call hierarchy"
+        name: "get_incoming_call_hierarchy",
+        description: "获取指定函数的来向调用关系（谁调用了该函数）"
+    },
+    {
+        name: "get_outgoing_call_hierarchy",
+        description: "获取指定函数的去向调用关系（该函数调用了谁）"
     },
     {
         name: "get_type_hierarchy",

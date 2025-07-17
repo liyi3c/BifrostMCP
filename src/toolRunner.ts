@@ -454,25 +454,17 @@ export const runTool = async (name: string, args: any) => {
             }
             break;
 
-        case "get_call_hierarchy":
+        case "get_incoming_call_hierarchy": {
             const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
                 'vscode.prepareCallHierarchy',
                 uri,
                 position
             );
-            
             if (callHierarchyItems?.[0]) {
-                const [incomingCalls, outgoingCalls] = await Promise.all([
-                    vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>(
-                        'vscode.executeCallHierarchyIncomingCalls',
-                        callHierarchyItems[0]
-                    ),
-                    vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
-                        'vscode.executeCallHierarchyOutgoingCalls',
-                        callHierarchyItems[0]
-                    )
-                ]);
-
+                const incomingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>(
+                    'vscode.provideIncomingCalls',
+                    callHierarchyItems[0]
+                );
                 result = {
                     item: {
                         name: callHierarchyItems[0].name,
@@ -516,7 +508,39 @@ export const runTool = async (name: string, args: any) => {
                                 character: range.end.character
                             }
                         }))
-                    })),
+                    }))
+                };
+            }
+            break;
+        }
+        case "get_outgoing_call_hierarchy": {
+            const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
+                'vscode.prepareCallHierarchy',
+                uri,
+                position
+            );
+            if (callHierarchyItems?.[0]) {
+                const outgoingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
+                    'vscode.provideOutgoingCalls',
+                    callHierarchyItems[0]
+                );
+                result = {
+                    item: {
+                        name: callHierarchyItems[0].name,
+                        kind: getSymbolKindString(callHierarchyItems[0].kind),
+                        detail: callHierarchyItems[0].detail,
+                        uri: callHierarchyItems[0].uri.toString(),
+                        range: {
+                            start: {
+                                line: callHierarchyItems[0].range.start.line,
+                                character: callHierarchyItems[0].range.start.character
+                            },
+                            end: {
+                                line: callHierarchyItems[0].range.end.line,
+                                character: callHierarchyItems[0].range.end.character
+                            }
+                        }
+                    },
                     outgoingCalls: outgoingCalls?.map(call => ({
                         to: {
                             name: call.to.name,
@@ -547,6 +571,7 @@ export const runTool = async (name: string, args: any) => {
                 };
             }
             break;
+        }
 
         case "get_type_hierarchy":
             const typeHierarchyItems = await vscode.commands.executeCommand<vscode.TypeHierarchyItem[]>(
