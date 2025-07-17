@@ -473,12 +473,10 @@ export const runTool = async (name: string, args: any) => {
                         uri: callHierarchyItems[0].uri.toString(),
                         range: {
                             start: {
-                                line: callHierarchyItems[0].range.start.line,
-                                character: callHierarchyItems[0].range.start.character
+                                line: callHierarchyItems[0].range.start.line
                             },
                             end: {
-                                line: callHierarchyItems[0].range.end.line,
-                                character: callHierarchyItems[0].range.end.character
+                                line: callHierarchyItems[0].range.end.line
                             }
                         }
                     },
@@ -489,25 +487,14 @@ export const runTool = async (name: string, args: any) => {
                             uri: call.from.uri.toString(),
                             range: {
                                 start: {
-                                    line: call.from.range.start.line,
-                                    character: call.from.range.start.character
+                                    line: call.from.range.start.line
                                 },
                                 end: {
-                                    line: call.from.range.end.line,
-                                    character: call.from.range.end.character
+                                    line: call.from.range.end.line
                                 }
                             }
-                        },
-                        fromRanges: call.fromRanges.map(range => ({
-                            start: {
-                                line: range.start.line,
-                                character: range.start.character
-                            },
-                            end: {
-                                line: range.end.line,
-                                character: range.end.character
-                            }
-                        }))
+                        }
+                        // fromRanges 字段已移除
                     }))
                 };
             }
