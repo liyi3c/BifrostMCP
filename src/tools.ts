@@ -526,6 +526,7 @@ export const mcpTools = [
             "- Which functions/methods call this function\n" +
             "- The exact location and range of each call\n" +
             "- Detailed information about the caller (name, kind, URI, range)\n\n" +
+            "Supports an optional parameter 'call_level' to recursively trace multiple levels of incoming calls (default is 3).\n" +
             "Useful for:\n" +
             "- Understanding code inflow and dependencies\n" +
             "- Impact analysis and dependency tracing\n" +
@@ -560,6 +561,10 @@ export const mcpTools = [
                         }
                     },
                     required: ["line", "character"]
+                },
+                call_level: {
+                    type: "number",
+                    description: "The number of levels to recursively trace incoming calls. Default is 3."
                 }
             },
             required: ["textDocument", "position"]
@@ -887,11 +892,11 @@ export const toolsDescriptions = [
     },
     {
         name: "get_incoming_call_hierarchy",
-        description: "获取指定函数的来向调用关系（谁调用了该函数）"
+        description: "Get incoming call hierarchy for a function (who calls this function)"
     },
     {
         name: "get_outgoing_call_hierarchy",
-        description: "获取指定函数的去向调用关系（该函数调用了谁）"
+        description: "Get outgoing call hierarchy for a function (which functions are called by this function)"
     },
     {
         name: "get_type_hierarchy",
