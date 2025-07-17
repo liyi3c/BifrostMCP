@@ -457,13 +457,19 @@ export const runTool = async (name: string, args: any) => {
         case "get_incoming_call_hierarchy": {
             // 新增参数 call_level，默认值为3
             const callLevel = typeof args?.call_level === 'number' ? args.call_level : 3;
-            // 递归函数，收集多层incoming calls
+            // 第一层，带 item
             async function getIncomingHierarchy(item: vscode.CallHierarchyItem, level: number): Promise<any> {
                 if (level <= 0) return null;
                 const incomingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>(
                     'vscode.provideIncomingCalls',
                     item
                 );
+                // 递归生成每个 incomingCall 的树结构
+                const incomingCallsTree = incomingCalls?.map(call =>
+                    fillIncomingCalls(call.from, level - 1)
+                ) || [];
+                // 等待所有递归
+                const incomingCallsResult = await Promise.all(incomingCallsTree);
                 return {
                     item: {
                         name: item.name,
@@ -475,51 +481,39 @@ export const runTool = async (name: string, args: any) => {
                             end: { line: item.range.end.line }
                         }
                     },
-                    incomingCalls: incomingCalls?.map(call => ({
-                        from: {
-                            name: call.from.name,
-                            kind: getSymbolKindString(call.from.kind),
-                            uri: call.from.uri.toString(),
-                            range: {
-                                start: {
-                                    line: call.from.range.start.line,
-                                    character: call.from.range.start.character
-                                },
-                                end: {
-                                    line: call.from.range.end.line,
-                                    character: call.from.range.end.character
-                                }
-                            }
-                        },
-                        // 递归获取上一层
-                        parentCalls: level > 1 ? undefined : null // 占位，后续递归填充
-                    })) || []
+                    incomingCalls: incomingCallsResult.filter(Boolean)
                 };
             }
-            // 递归填充parentCalls
-            async function fillParentCalls(node: any, level: number): Promise<any> {
-                if (!node.incomingCalls || level <= 1) return node;
-                for (const call of node.incomingCalls) {
-                    console.log('[fillParentCalls] prepareCallHierarchy params:', {
-                        uri: call.from.uri,
-                        line: call.from.range.start.line,
-                        character: call.from.range.start.character
-                    });
-                    const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
-                        'vscode.prepareCallHierarchy',
-                        vscode.Uri.parse(call.from.uri),
-                        { line: call.from.range.start.line, character: call.from.range.start.character }
-                    );
-                    console.log('[fillParentCalls] prepareCallHierarchy result length:', callHierarchyItems?.length);
-                    if (callHierarchyItems?.[0]) {
-                        const parentNode = await getIncomingHierarchy(callHierarchyItems[0], 1);
-                        call.parentCalls = await fillParentCalls(parentNode, level - 1);
-                    } else {
-                        console.log('[fillParentCalls] parentCalls set to null, call:', call);
-                        call.parentCalls = null;
-                    }
-                }
-                return node;
+            // 递归生成 { from, incomingCalls } 结构
+            async function fillIncomingCalls(fromItem: vscode.CallHierarchyItem, level: number): Promise<any> {
+                if (level <= 0) return null;
+                const incomingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>(
+                    'vscode.provideIncomingCalls',
+                    fromItem
+                );
+                const incomingCallsTree = incomingCalls?.map(call =>
+                    fillIncomingCalls(call.from, level - 1)
+                ) || [];
+                const incomingCallsResult = await Promise.all(incomingCallsTree);
+                return {
+                    from: {
+                        name: fromItem.name,
+                        kind: getSymbolKindString(fromItem.kind),
+                        detail: fromItem.detail,
+                        uri: fromItem.uri.toString(),
+                        range: {
+                            start: {
+                                line: fromItem.range.start.line,
+                                character: fromItem.range.start.character
+                            },
+                            end: {
+                                line: fromItem.range.end.line,
+                                character: fromItem.range.end.character
+                            }
+                        }
+                    },
+                    incomingCalls: incomingCallsResult.filter(Boolean)
+                };
             }
             const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
                 'vscode.prepareCallHierarchy',
@@ -527,9 +521,7 @@ export const runTool = async (name: string, args: any) => {
                 position
             );
             if (callHierarchyItems?.[0]) {
-                let root = await getIncomingHierarchy(callHierarchyItems[0], callLevel);
-                root = await fillParentCalls(root, callLevel);
-                result = root;
+                result = await getIncomingHierarchy(callHierarchyItems[0], callLevel);
             }
             break;
         }
