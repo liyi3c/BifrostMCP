@@ -1,6 +1,6 @@
 {
-  "name": "bifrost-mcp",
-  "displayName": "Bifrost - VSCode Dev Tools MCP Server",
+  "name": "bifrost-mcp-webank",
+  "displayName": "Bifrost-Webank - VSCode Dev Tools MCP Server",
   "description": "An MCP server that exposes features of VSCode dev tools to the MCP clients",
   "version": "0.0.14",
   "publisher": "ConnorHallman",
