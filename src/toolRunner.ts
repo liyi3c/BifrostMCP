@@ -526,61 +526,67 @@ export const runTool = async (name: string, args: any) => {
             break;
         }
         case "get_outgoing_call_hierarchy": {
+            // 新增参数 call_level，默认值为3
+            const callLevel = typeof args?.call_level === 'number' ? args.call_level : 3;
+            // 递归获取 outgoing call 层级
+            async function getOutgoingHierarchy(item: vscode.CallHierarchyItem, level: number): Promise<any> {
+                if (level <= 0) return null;
+                const outgoingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
+                    'vscode.provideOutgoingCalls',
+                    item
+                );
+                // 递归生成每个 outgoingCall 的树结构
+                const outgoingCallsTree = outgoingCalls?.map(call =>
+                    fillOutgoingCalls(call.to, level - 1)
+                ) || [];
+                // 等待所有递归
+                const outgoingCallsResult = await Promise.all(outgoingCallsTree);
+                return {
+                    item: {
+                        name: item.name,
+                        kind: getSymbolKindString(item.kind),
+                        detail: item.detail,
+                        uri: item.uri.toString(),
+                        range: {
+                            start: { line: item.range.start.line, character: item.range.start.character },
+                            end: { line: item.range.end.line, character: item.range.end.character }
+                        }
+                    },
+                    outgoingCalls: outgoingCallsResult.filter(Boolean)
+                };
+            }
+            // 递归生成 { to, outgoingCalls } 结构（去掉fromRanges）
+            async function fillOutgoingCalls(toItem: vscode.CallHierarchyItem, level: number): Promise<any> {
+                if (level <= 0) return null;
+                const outgoingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
+                    'vscode.provideOutgoingCalls',
+                    toItem
+                );
+                const outgoingCallsTree = outgoingCalls?.map(call =>
+                    fillOutgoingCalls(call.to, level - 1)
+                ) || [];
+                const outgoingCallsResult = await Promise.all(outgoingCallsTree);
+                return {
+                    to: {
+                        name: toItem.name,
+                        kind: getSymbolKindString(toItem.kind),
+                        detail: toItem.detail,
+                        uri: toItem.uri.toString(),
+                        range: {
+                            start: { line: toItem.range.start.line, character: toItem.range.start.character },
+                            end: { line: toItem.range.end.line, character: toItem.range.end.character }
+                        }
+                    },
+                    outgoingCalls: outgoingCallsResult.filter(Boolean)
+                };
+            }
             const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
                 'vscode.prepareCallHierarchy',
                 uri,
                 position
             );
             if (callHierarchyItems?.[0]) {
-                const outgoingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
-                    'vscode.provideOutgoingCalls',
-                    callHierarchyItems[0]
-                );
-                result = {
-                    item: {
-                        name: callHierarchyItems[0].name,
-                        kind: getSymbolKindString(callHierarchyItems[0].kind),
-                        detail: callHierarchyItems[0].detail,
-                        uri: callHierarchyItems[0].uri.toString(),
-                        range: {
-                            start: {
-                                line: callHierarchyItems[0].range.start.line,
-                                character: callHierarchyItems[0].range.start.character
-                            },
-                            end: {
-                                line: callHierarchyItems[0].range.end.line,
-                                character: callHierarchyItems[0].range.end.character
-                            }
-                        }
-                    },
-                    outgoingCalls: outgoingCalls?.map(call => ({
-                        to: {
-                            name: call.to.name,
-                            kind: getSymbolKindString(call.to.kind),
-                            uri: call.to.uri.toString(),
-                            range: {
-                                start: {
-                                    line: call.to.range.start.line,
-                                    character: call.to.range.start.character
-                                },
-                                end: {
-                                    line: call.to.range.end.line,
-                                    character: call.to.range.end.character
-                                }
-                            }
-                        },
-                        fromRanges: call.fromRanges.map(range => ({
-                            start: {
-                                line: range.start.line,
-                                character: range.start.character
-                            },
-                            end: {
-                                line: range.end.line,
-                                character: range.end.character
-                            }
-                        }))
-                    }))
-                };
+                result = await getOutgoingHierarchy(callHierarchyItems[0], callLevel);
             }
             break;
         }

@@ -578,6 +578,7 @@ export const mcpTools = [
             "- List of called functions/methods\n" +
             "- The exact location and range of each call\n" +
             "- Detailed information about the callee (name, kind, URI, range)\n\n" +
+            "Supports an optional parameter 'call_level' to recursively trace multiple levels of outgoing calls (default is 3).\n" +
             "Useful for:\n" +
             "- Understanding code outflow and dependencies\n" +
             "- Analyzing call chains and dependencies\n" +
@@ -611,9 +612,13 @@ export const mcpTools = [
                         }
                     },
                     required: ["line", "character"]
+                },
+                call_level: {
+                    type: "number",
+                    description: "The number of levels to recursively trace outgoing calls. Default is 3."
                 }
             },
-            required: ["textDocument", "position"]
+            required: ["textDocument", "position", "call_level"]
         }
     },
     {
