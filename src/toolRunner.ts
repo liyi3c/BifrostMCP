@@ -526,11 +526,19 @@ export const runTool = async (name: string, args: any) => {
             break;
         }
         case "get_outgoing_call_hierarchy": {
-            // 新增参数 call_level，默认值为3
+            // 新增参数 include_packages，默认值为 ["cn.webank.cnc"]
+            const includePackages: string[] = Array.isArray(args?.include_packages) && args.include_packages.length > 0
+                ? args.include_packages
+                : ["com.tngtech.archunit"];
+            console.log("[get_outgoing_call_hierarchy] includePackages:", includePackages);
             const callLevel = typeof args?.call_level === 'number' ? args.call_level : 3;
-            // 递归获取 outgoing call 层级
+            // 递归获取 outgoing call 层级，带包名过滤
             async function getOutgoingHierarchy(item: vscode.CallHierarchyItem, level: number): Promise<any> {
                 if (level <= 0) return null;
+                if (!includePackages.some(pkg => item.detail && item.detail.startsWith(pkg))) {
+                    // 不在包名列表，直接返回 null，不递归 outgoing
+                    return null;
+                }
                 const outgoingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
                     'vscode.provideOutgoingCalls',
                     item
@@ -539,8 +547,8 @@ export const runTool = async (name: string, args: any) => {
                 const outgoingCallsTree = outgoingCalls?.map(call =>
                     fillOutgoingCalls(call.to, level - 1)
                 ) || [];
-                // 等待所有递归
-                const outgoingCallsResult = await Promise.all(outgoingCallsTree);
+                // 等待所有递归，并过滤掉 null
+                const outgoingCallsResult = (await Promise.all(outgoingCallsTree)).filter(Boolean);
                 return {
                     item: {
                         name: item.name,
@@ -552,12 +560,16 @@ export const runTool = async (name: string, args: any) => {
                             end: { line: item.range.end.line, character: item.range.end.character }
                         }
                     },
-                    outgoingCalls: outgoingCallsResult.filter(Boolean)
+                    outgoingCalls: outgoingCallsResult
                 };
             }
-            // 递归生成 { to, outgoingCalls } 结构（去掉fromRanges）
+            // 递归生成 { to, outgoingCalls } 结构（去掉fromRanges），带包名过滤
             async function fillOutgoingCalls(toItem: vscode.CallHierarchyItem, level: number): Promise<any> {
                 if (level <= 0) return null;
+                if (!includePackages.some(pkg => toItem.detail && toItem.detail.startsWith(pkg))) {
+                    // 不在包名列表，直接返回 null
+                    return null;
+                }
                 const outgoingCalls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>(
                     'vscode.provideOutgoingCalls',
                     toItem
@@ -565,7 +577,7 @@ export const runTool = async (name: string, args: any) => {
                 const outgoingCallsTree = outgoingCalls?.map(call =>
                     fillOutgoingCalls(call.to, level - 1)
                 ) || [];
-                const outgoingCallsResult = await Promise.all(outgoingCallsTree);
+                const outgoingCallsResult = (await Promise.all(outgoingCallsTree)).filter(Boolean);
                 return {
                     to: {
                         name: toItem.name,
@@ -577,7 +589,7 @@ export const runTool = async (name: string, args: any) => {
                             end: { line: toItem.range.end.line, character: toItem.range.end.character }
                         }
                     },
-                    outgoingCalls: outgoingCallsResult.filter(Boolean)
+                    outgoingCalls: outgoingCallsResult
                 };
             }
             const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(

@@ -116,6 +116,9 @@ export const webviewHtml = `
                     ${tool.name === 'get_workspace_symbols' ? `
                         <input type="text" id="query-${tool.name}" placeholder="Search symbols..." style="width: 200px">
                     ` : ''}
+                    ${tool.name === 'get_outgoing_call_hierarchy' ? `
+                        <input type="text" id="includePackages-${tool.name}" placeholder="Include Packages..." style="width: 200px">
+                    ` : ''}
                 </div>
                 <button onclick="executeTool('${tool.name}')">Execute</button>
                 <pre id="result-${tool.name}">Results will appear here...</pre>
@@ -245,6 +248,13 @@ export const webviewHtml = `
                     const newName = document.getElementById('newname-' + toolName)?.value;
                     if (newName) {
                         params.newName = newName;
+                    }
+                }
+
+                if (toolName === 'get_outgoing_call_hierarchy') {
+                    const includePackages = document.getElementById('includePackages-' + toolName)?.value;
+                    if (includePackages) {
+                        params.include_packages = includePackages.split(',').map(s => s.trim()).filter(Boolean);
                     }
                 }
 
