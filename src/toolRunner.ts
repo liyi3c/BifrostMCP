@@ -530,8 +530,8 @@ export const runTool = async (name: string, args: any) => {
             const includePackages: string[] = Array.isArray(args?.include_packages) && args.include_packages.length > 0
                 ? args.include_packages
                 : ["cn.webank.cnc"];
-            console.log("[get_outgoing_call_hierarchy] includePackages:", includePackages);
             const callLevel = typeof args?.call_level === 'number' ? args.call_level : 3;
+            const retSimple = typeof args?.retSimple === 'boolean' ? args.retSimple : true;
             // 递归获取 outgoing call 层级，带包名过滤
             async function getOutgoingHierarchy(item: vscode.CallHierarchyItem, level: number): Promise<any> {
                 if (level <= 0) return null;
@@ -592,13 +592,83 @@ export const runTool = async (name: string, args: any) => {
                     outgoingCalls: outgoingCallsResult
                 };
             }
+            // 辅助函数：获取类名
+            function getClassName(detail: string) {
+                if (!detail) return '';
+                const parts = detail.split('.');
+                return parts[parts.length - 1];
+            }
+            // 辅助函数：将原始树结构转为简化字符串格式（带包名去重）
+            function rangeStr(range: any) {
+                if (!range) return '';
+                return `[${range.start.line}-${range.end.line}]`;
+            }
+            function simpleItemStr(item: any, parentPkg?: string) {
+                const detail = item.detail || '';
+                if (parentPkg && detail === parentPkg) {
+                    // 只显示类名
+                    return `${getClassName(detail)}${rangeStr(item.range)}.${item.name}`;
+                } else {
+                    return `${detail}${rangeStr(item.range)}.${item.name}`;
+                }
+            }
+            function toSimpleLines(node: any, prefix = '', parentPkg = ''): string[] {
+                if (!node) return [];
+                let lines: string[] = [];
+                let currPkg = '';
+                // 处理根节点
+                if (node.item) {
+                    currPkg = node.item.detail || '';
+                    lines.push(simpleItemStr(node.item, parentPkg));
+                    if (Array.isArray(node.outgoingCalls) && node.outgoingCalls.length > 0) {
+                        const children = node.outgoingCalls.filter(Boolean);
+                        children.forEach((child: any, idx: any) => {
+                            const isLast = idx === children.length - 1;
+                            const branch = isLast ? '└─' : '├─';
+                            const childPrefix = prefix + (isLast ? '   ' : '│  ');
+                            const childLines = toSimpleLines(child, childPrefix, currPkg);
+                            // 第一行加树枝符号，后续行加竖线对齐
+                            if (childLines.length > 0) {
+                                lines.push(prefix + branch + childLines[0]);
+                                for (let i = 1; i < childLines.length; i++) {
+                                    lines.push(childPrefix + childLines[i]);
+                                }
+                            }
+                        });
+                    }
+                } else if (node.to) {
+                    currPkg = node.to.detail || '';
+                    lines.push(simpleItemStr(node.to, parentPkg));
+                    if (Array.isArray(node.outgoingCalls) && node.outgoingCalls.length > 0) {
+                        const children = node.outgoingCalls.filter(Boolean);
+                        children.forEach((child: any, idx: any) => {
+                            const isLast = idx === children.length - 1;
+                            const branch = isLast ? '└─' : '├─';
+                            const childPrefix = prefix + (isLast ? '   ' : '│  ');
+                            const childLines = toSimpleLines(child, childPrefix, currPkg);
+                            if (childLines.length > 0) {
+                                lines.push(prefix + branch + childLines[0]);
+                                for (let i = 1; i < childLines.length; i++) {
+                                    lines.push(childPrefix + childLines[i]);
+                                }
+                            }
+                        });
+                    }
+                }
+                return lines;
+            }
             const callHierarchyItems = await vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
                 'vscode.prepareCallHierarchy',
                 uri,
                 position
             );
             if (callHierarchyItems?.[0]) {
-                result = await getOutgoingHierarchy(callHierarchyItems[0], callLevel);
+                const tree = await getOutgoingHierarchy(callHierarchyItems[0], callLevel);
+                if (retSimple) {
+                    result = toSimpleLines(tree).join(require('os').EOL);
+                } else {
+                    result = tree;
+                }
             }
             break;
         }
