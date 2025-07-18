@@ -529,7 +529,7 @@ export const runTool = async (name: string, args: any) => {
             // 新增参数 include_packages，默认值为 ["cn.webank.cnc"]
             const includePackages: string[] = Array.isArray(args?.include_packages) && args.include_packages.length > 0
                 ? args.include_packages
-                : ["com.tngtech.archunit"];
+                : ["cn.webank.cnc"];
             console.log("[get_outgoing_call_hierarchy] includePackages:", includePackages);
             const callLevel = typeof args?.call_level === 'number' ? args.call_level : 3;
             // 递归获取 outgoing call 层级，带包名过滤
