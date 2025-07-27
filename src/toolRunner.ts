@@ -202,30 +202,39 @@ export const runTool = async (name: string, args: any) => {
         }
 
         case "get_code_actions":
+            console.log("[get_code_actions] start", { uri: uri.toString(), position });
+            const t0 = Date.now();
             const codeActions = await vscode.commands.executeCommand<vscode.CodeAction[]>(
                 'vscode.executeCodeActionProvider',
                 uri,
                 position ? new vscode.Range(position, position) : undefined
             );
-            result = codeActions?.map(action => ({
-                title: action.title,
-                kind: action.kind?.value,
-                isPreferred: action.isPreferred,
-                diagnostics: action.diagnostics?.map(diag => ({
-                    message: diag.message,
-                    severity: diag.severity,
-                    range: {
-                        start: {
-                            line: diag.range.start.line,
-                            character: diag.range.start.character
-                        },
-                        end: {
-                            line: diag.range.end.line,
-                            character: diag.range.end.character
+            const t1 = Date.now();
+            console.log(`[get_code_actions] codeActions fetched in ${t1 - t0}ms, count: ${codeActions?.length}`);
+            result = codeActions?.map(action => {
+                console.log(`[get_code_actions] action: ${action.title}, diagnostics: ${action.diagnostics?.length}`);
+                return {
+                    title: action.title,
+                    kind: action.kind?.value,
+                    isPreferred: action.isPreferred,
+                    diagnostics: action.diagnostics?.map(diag => ({
+                        message: diag.message,
+                        severity: diag.severity,
+                        range: {
+                            start: {
+                                line: diag.range.start.line,
+                                character: diag.range.start.character
+                            },
+                            end: {
+                                line: diag.range.end.line,
+                                character: diag.range.end.character
+                            }
                         }
-                    }
-                }))
-            }));
+                    }))
+                };
+            });
+            const t2 = Date.now();
+            console.log(`[get_code_actions] result mapped in ${t2 - t1}ms, total elapsed: ${t2 - t0}ms`);
             break;
 
         case "get_code_lens":
