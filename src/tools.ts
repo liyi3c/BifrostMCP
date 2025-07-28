@@ -834,16 +834,21 @@ export const mcpTools = [
     // },
     {
         name: "get_workspace_symbols",
-        description: "Searches for symbols across the entire workspace. This is useful for finding symbols by name across all files. Especially useful for finding the file and positions of a symbol to use in other tools.",
+        description: "Searches for symbol(include class、method、field getter/setter method) across the entire workspace. This is useful for finding class/method by name, field by getter/setter name across all files. Especially useful for finding the file and positions of a symbol to use in other tools. Correct Use 1: \"query\":\"someClass\", Correct Use 2: \"query\":\"someMethod\",Wrong Use 1 because search match package exactly: \"query\":\"mayWrongPackage.someClass\",Wrong Use 2 because not support search field by name: \"query\":\"fieldName\", Correct Use 3 because need work around by search field getter or setter method: \"query\":\"getSomeField\".\n\nReturns a maximum of 20 symbols by default, which can be adjusted with the limit parameter.",
         inputSchema: {
             type: "object",
             properties: {
                 query: {
                     type: "string",
-                    description: "The search query for finding symbols"
+                    description: "The search query for finding symbol, but only support one symbol each time"
+                },
+                limit: {
+                    type: "number",
+                    description: "Maximum number of symbols to return (default: 20)",
+                    default: 20
                 }
             },
-            required: ["query"]
+            required: ["query","limit"]
         }
     }
 ];
@@ -927,6 +932,6 @@ export const toolsDescriptions = [
     },
     {
         name: "get_workspace_symbols",
-        description: "Search for symbols across the workspace"
+        description: "Search for symbols across the workspace (max 20 by default)"
     }
 ];

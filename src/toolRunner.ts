@@ -350,11 +350,12 @@ export const runTool = async (name: string, args: any) => {
 
         case "get_workspace_symbols":
             const query = args.query || '';
+            const limit = args.limit ?? 20;
             const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
                 'vscode.executeWorkspaceSymbolProvider',
                 query
             );
-            result = symbols?.map(symbol => ({
+            result = symbols?.slice(0, limit).map(symbol => ({
                 name: symbol.name,
                 kind: symbol.kind,
                 location: {
