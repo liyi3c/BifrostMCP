@@ -199,39 +199,39 @@ export const mcpTools = [
     //     }
     // },
     // },
-    {
-        name: "get_document_symbols",
-        description: "Analyzes and returns a hierarchical list of all symbols defined within a document. " +
-            "This tool provides a comprehensive overview of the code structure by identifying:\n" +
-            "- Classes and interfaces\n" +
-            "- Methods and functions\n" +
-            "- Properties and fields\n" +
-            "- Namespaces and modules\n" +
-            "- Constants and enumerations\n\n" +
-            "The symbols are returned in a structured format that preserves their relationships and scope. " +
-            "This is particularly useful for:\n" +
-            "- Understanding the overall structure of a file\n" +
-            "- Creating code outlines and documentation\n" +
-            "- Navigating large files efficiently\n" +
-            "- Analyzing code organization and architecture",
-        inputSchema: {
-            type: "object",
-            properties: {
-                textDocument: {
-                    type: "object",
-                    description: "The document to analyze",
-                    properties: {
-                        uri: {
-                            type: "string",
-                            description: "URI of the document"
-                        }
-                    },
-                    required: ["uri"]
-                }
-            },
-            required: ["textDocument"]
-        }
-    },
+    // {
+    //     name: "get_document_symbols",
+    //     description: "Analyzes and returns a hierarchical list of all symbols defined within a document. " +
+    //         "This tool provides a comprehensive overview of the code structure by identifying:\n" +
+    //         "- Classes and interfaces\n" +
+    //         "- Methods and functions\n" +
+    //         "- Properties and fields\n" +
+    //         "- Namespaces and modules\n" +
+    //         "- Constants and enumerations\n\n" +
+    //         "The symbols are returned in a structured format that preserves their relationships and scope. " +
+    //         "This is particularly useful for:\n" +
+    //         "- Understanding the overall structure of a file\n" +
+    //         "- Creating code outlines and documentation\n" +
+    //         "- Navigating large files efficiently\n" +
+    //         "- Analyzing code organization and architecture",
+    //     inputSchema: {
+    //         type: "object",
+    //         properties: {
+    //             textDocument: {
+    //                 type: "object",
+    //                 description: "The document to analyze",
+    //                 properties: {
+    //                     uri: {
+    //                         type: "string",
+    //                         description: "URI of the document"
+    //                     }
+    //                 },
+    //                 required: ["uri"]
+    //             }
+    //         },
+    //         required: ["textDocument"]
+    //     }
+    // },
     // {
     //     name: "get_completions",
     //     description: "Provides intelligent code completion suggestions based on the current context and cursor position. " +
@@ -434,55 +434,55 @@ export const mcpTools = [
     //     required: ["textDocument", "position", "newName"]
     // }
     // },
-    // {
-    //     name: "get_code_actions",
-    //     description: "Provides context-aware code actions and refactoring suggestions at a specified location. " +
-    //         "This tool analyzes the code to offer intelligent improvements such as:\n" +
-    //         "- Quick fixes for errors and warnings\n" +
-    //         "- Code refactoring options\n" +
-    //         "- Import management suggestions\n" +
-    //         "- Code style improvements\n" +
-    //         "- Performance optimizations\n\n" +
-    //         "Available actions may include:\n" +
-    //         "- Extract method/variable/constant\n" +
-    //         "- Implement interface members\n" +
-    //         "- Add missing imports\n" +
-    //         "- Convert code constructs\n" +
-    //         "- Fix code style issues\n\n" +
-    //         "Note: Line numbers are 0-based (first line is 0), and character positions are 0-based (first character is 0).",
-    //     inputSchema: {
-    //         type: "object",
-    //         properties: {
-    //             textDocument: {
-    //             type: "object",
-    //             description: "The document to get code actions for",
-    //             properties: {
-    //                 uri: {
-    //                 type: "string",
-    //                 description: "URI of the document"
-    //             }
-    //             },
-    //             required: ["uri"]
-    //         },
-    //         position: {
-    //             type: "object",
-    //             description: "The position to get code actions at",
-    //             properties: {
-    //                 line: {
-    //                 type: "number",
-    //                 description: "Zero-based line number"
-    //             },
-    //             character: {
-    //                 type: "number",
-    //                 description: "Zero-based character position"
-    //             }
-    //         },
-    //         required: ["line", "character"]
-    //     }
-    // },
-    //     required: ["textDocument", "position"]
-    // }
-    // },
+    {
+        name: "get_code_actions",
+        description: "Provides context-aware code actions and refactoring suggestions at a specified location. " +
+            "This tool analyzes the code to offer intelligent improvements such as:\n" +
+            "- Quick fixes for errors and warnings\n" +
+            "- Code refactoring options\n" +
+            "- Import management suggestions\n" +
+            "- Code style improvements\n" +
+            "- Performance optimizations\n\n" +
+            "Available actions may include:\n" +
+            "- Extract method/variable/constant\n" +
+            "- Implement interface members\n" +
+            "- Add missing imports\n" +
+            "- Convert code constructs\n" +
+            "- Fix code style issues\n\n" +
+            "Note: Line numbers are 0-based (first line is 0), and character positions are 0-based (first character is 0).",
+        inputSchema: {
+            type: "object",
+            properties: {
+                textDocument: {
+                    type: "object",
+                    description: "The document to get code actions for",
+                    properties: {
+                        uri: {
+                        type: "string",
+                        description: "URI of the document"
+                    }
+                    },
+                    required: ["uri"]
+                },
+                position: {
+                    type: "object",
+                    description: "The position to get code actions at",
+                    properties: {
+                            line: {
+                            type: "number",
+                            description: "Zero-based line number"
+                        },
+                        character: {
+                            type: "number",
+                            description: "Zero-based character position"
+                        }
+                    },
+                    required: ["line", "character"]
+                }
+            },
+            required: ["textDocument", "position"]
+        }
+    },
     // {
     //     name: "get_semantic_tokens",
     //     description: "Provides detailed semantic token information for enhanced code understanding and highlighting. " +
@@ -619,54 +619,54 @@ export const mcpTools = [
             required: ["textDocument", "position", "call_level"]
         }
     },
-    {
-        name: "get_type_hierarchy",
-        description: "Analyzes and visualizes the inheritance and implementation relationships between types. " +
-            "This tool creates a comprehensive type hierarchy showing:\n" +
-            "- Parent classes and interfaces\n" +
-            "- Child classes and implementations\n" +
-            "- Interface inheritance chains\n" +
-            "- Mixin and trait relationships\n\n" +
-            "The hierarchy information is crucial for:\n" +
-            "- Understanding class relationships\n" +
-            "- Analyzing inheritance patterns\n" +
-            "- Planning class structure changes\n" +
-            "- Identifying potential abstraction opportunities\n" +
-            "- Verifying type system design\n\n" +
-            "Note: Line numbers are 0-based (first line is 0), and character positions are 0-based (first character is 0).",
-        inputSchema: {
-            type: "object",
-            properties: {
-                textDocument: {
-                    type: "object",
-                    description: "The document containing the type",
-                    properties: {
-                        uri: {
-                            type: "string",
-                            description: "URI of the document"
-                        }
-                    },
-                    required: ["uri"]
-                },
-                position: {
-                    type: "object",
-                    description: "The position of the type",
-                    properties: {
-                        line: {
-                            type: "number",
-                            description: "Zero-based line number"
-                        },
-                        character: {
-                            type: "number",
-                            description: "Zero-based character position"
-                        }
-                    },
-                    required: ["line", "character"]
-                }
-            },
-            required: ["textDocument", "position"]
-        }
-    },
+    // {
+    //     name: "get_type_hierarchy",
+    //     description: "Analyzes and visualizes the inheritance and implementation relationships between types. " +
+    //         "This tool creates a comprehensive type hierarchy showing:\n" +
+    //         "- Parent classes and interfaces\n" +
+    //         "- Child classes and implementations\n" +
+    //         "- Interface inheritance chains\n" +
+    //         "- Mixin and trait relationships\n\n" +
+    //         "The hierarchy information is crucial for:\n" +
+    //         "- Understanding class relationships\n" +
+    //         "- Analyzing inheritance patterns\n" +
+    //         "- Planning class structure changes\n" +
+    //         "- Identifying potential abstraction opportunities\n" +
+    //         "- Verifying type system design\n\n" +
+    //         "Note: Line numbers are 0-based (first line is 0), and character positions are 0-based (first character is 0).",
+    //     inputSchema: {
+    //         type: "object",
+    //         properties: {
+    //             textDocument: {
+    //                 type: "object",
+    //                 description: "The document containing the type",
+    //                 properties: {
+    //                     uri: {
+    //                         type: "string",
+    //                         description: "URI of the document"
+    //                     }
+    //                 },
+    //                 required: ["uri"]
+    //             },
+    //             position: {
+    //                 type: "object",
+    //                 description: "The position of the type",
+    //                 properties: {
+    //                     line: {
+    //                         type: "number",
+    //                         description: "Zero-based line number"
+    //                     },
+    //                     character: {
+    //                         type: "number",
+    //                         description: "Zero-based character position"
+    //                     }
+    //                 },
+    //                 required: ["line", "character"]
+    //             }
+    //         },
+    //         required: ["textDocument", "position"]
+    //     }
+    // },
     // {
     //     name: "get_code_lens",
     //     description: "Gets CodeLens information for a document, showing actionable contextual information inline with code",
@@ -724,42 +724,42 @@ export const mcpTools = [
     //     required: ["textDocument", "position"]
     // }
     // },
-    {
-        name: "get_type_definition",
-        description: "Finds type definitions of a symbol at a specified location. This is particularly useful for finding the underlying type definitions of variables, interfaces, and classes.",
-        inputSchema: {
-            type: "object",
-            properties: {
-                textDocument: {
-                    type: "object",
-                    description: "The document containing the symbol",
-                    properties: {
-                        uri: {
-                            type: "string",
-                            description: "URI of the document"
-                        }
-                    },
-                    required: ["uri"]
-                },
-                position: {
-                    type: "object",
-                    description: "The position of the symbol",
-                    properties: {
-                        line: {
-                            type: "number",
-                            description: "Zero-based line number"
-                        },
-                        character: {
-                            type: "number",
-                            description: "Zero-based character position"
-                        }
-                    },
-                    required: ["line", "character"]
-                }
-            },
-            required: ["textDocument", "position"]
-        }
-    },
+    // {
+    //     name: "get_type_definition",
+    //     description: "Finds type definitions of a symbol at a specified location. This is particularly useful for finding the underlying type definitions of variables, interfaces, and classes.",
+    //     inputSchema: {
+    //         type: "object",
+    //         properties: {
+    //             textDocument: {
+    //                 type: "object",
+    //                 description: "The document containing the symbol",
+    //                 properties: {
+    //                     uri: {
+    //                         type: "string",
+    //                         description: "URI of the document"
+    //                     }
+    //                 },
+    //                 required: ["uri"]
+    //             },
+    //             position: {
+    //                 type: "object",
+    //                 description: "The position of the symbol",
+    //                 properties: {
+    //                     line: {
+    //                         type: "number",
+    //                         description: "Zero-based line number"
+    //                     },
+    //                     character: {
+    //                         type: "number",
+    //                         description: "Zero-based character position"
+    //                     }
+    //                 },
+    //                 required: ["line", "character"]
+    //             }
+    //         },
+    //         required: ["textDocument", "position"]
+    //     }
+    // },
     // {
     //     name: "get_declaration",
     //     description: "Finds declarations of a symbol at a specified location. This helps in navigating to where symbols are declared, particularly useful for imported symbols.",
@@ -866,38 +866,38 @@ export const toolsDescriptions = [
         name: "find_implementations",
         description: "Find implementations of interface/abstract method"
     },
-    {
-        name: "get_hover_info",
-        description: "Get hover information for a symbol"
-    },
-    {
-        name: "get_document_symbols",
-        description: "Get all symbols in document"
-    },
-    {
-        name: "get_completions",
-        description: "Get code completion suggestions at a position"
-    },
-    {
-        name: "get_signature_help",
-        description: "Get function signature information"
-    },
-    {
-        name: "get_rename_locations",
-        description: "Get all locations that would be affected by renaming a symbol"
-    },
-    {
-        name: "rename",
-        description: "Rename a symbol"
-    },
+    // {
+    //     name: "get_hover_info",
+    //     description: "Get hover information for a symbol"
+    // },
+    // {
+    //     name: "get_document_symbols",
+    //     description: "Get all symbols in document"
+    // },
+    // {
+    //     name: "get_completions",
+    //     description: "Get code completion suggestions at a position"
+    // },
+    // {
+    //     name: "get_signature_help",
+    //     description: "Get function signature information"
+    // },
+    // {
+    //     name: "get_rename_locations",
+    //     description: "Get all locations that would be affected by renaming a symbol"
+    // },
+    // {
+    //     name: "rename",
+    //     description: "Rename a symbol"
+    // },
     {
         name: "get_code_actions",
         description: "Get available code actions and refactorings"
     },
-    {
-        name: "get_semantic_tokens",
-        description: "Get semantic token information for code understanding"
-    },
+    // {
+    //     name: "get_semantic_tokens",
+    //     description: "Get semantic token information for code understanding"
+    // },
     {
         name: "get_incoming_call_hierarchy",
         description: "Get incoming call hierarchy for a function (who calls this function)"
@@ -906,30 +906,30 @@ export const toolsDescriptions = [
         name: "get_outgoing_call_hierarchy",
         description: "Get outgoing call hierarchy for a function (which functions are called by this function)"
     },
-    {
-        name: "get_type_hierarchy",
-        description: "Get type hierarchy information"
-    },
-    {
-        name: "get_code_lens",
-        description: "Gets CodeLens information for a document, showing actionable contextual information inline with code"
-    },
-    {
-        name: "get_selection_range",
-        description: "Gets selection ranges for smart selection expansion"
-    },
-    {
-        name: "get_type_definition",
-        description: "Find type definitions of symbols"
-    },
-    {
-        name: "get_declaration",
-        description: "Find declarations of symbols"
-    },
-    {
-        name: "get_document_highlights",
-        description: "Find all highlights of a symbol in document"
-    },
+    // {
+    //     name: "get_type_hierarchy",
+    //     description: "Get type hierarchy information"
+    // },
+    // {
+    //     name: "get_code_lens",
+    //     description: "Gets CodeLens information for a document, showing actionable contextual information inline with code"
+    // },
+    // {
+    //     name: "get_selection_range",
+    //     description: "Gets selection ranges for smart selection expansion"
+    // },
+    // {
+    //     name: "get_type_definition",
+    //     description: "Find type definitions of symbols"
+    // },
+    // {
+    //     name: "get_declaration",
+    //     description: "Find declarations of symbols"
+    // },
+    // {
+    //     name: "get_document_highlights",
+    //     description: "Find all highlights of a symbol in document"
+    // },
     {
         name: "get_workspace_symbols",
         description: "Search for symbols across the workspace (max 20 by default)"
