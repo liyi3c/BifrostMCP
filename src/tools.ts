@@ -844,7 +844,7 @@ export const mcpTools = [
                 },
                 limit: {
                     type: "number",
-                    description: "Maximum number of symbols to return (default: 20)",
+                    description: "Maximum number of symbols to return (default: 20, min: 5, max: 100)",
                     default: 20
                 }
             },
